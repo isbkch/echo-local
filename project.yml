@@ -1,0 +1,63 @@
+name: EchoLocal
+
+options:
+  bundleIdPrefix: com.isbkch
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  KokoroSwift:
+    url: https://github.com/mlalma/kokoro-ios.git
+    exactVersion: 1.0.11
+  MLXSwift:
+    url: https://github.com/ml-explore/mlx-swift.git
+    exactVersion: 0.30.2
+
+targets:
+  EchoLocal:
+    type: application
+    platform: macOS
+    sources:
+      - path: EchoLocal
+        excludes:
+          - Info.plist
+          - EchoLocal.entitlements
+    dependencies:
+      - package: KokoroSwift
+        product: KokoroSwift
+        embed: true
+      - package: MLXSwift
+        product: MLX
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.isbkch.echolocal
+        PRODUCT_NAME: Echolocal
+        PRODUCT_MODULE_NAME: EchoLocal
+        SWIFT_VERSION: 5.0
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: EchoLocal/EchoLocal.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: EchoLocal/Info.plist
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: 1
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets:
+        - EchoLocalTests
+      gatherCoverageData: true
+
+  EchoLocalTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: EchoLocalTests
+    dependencies:
+      - target: EchoLocal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.isbkch.echolocal.tests
+        SWIFT_VERSION: 5.0
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Echolocal.app/Contents/MacOS/Echolocal"
+        BUNDLE_LOADER: "$(TEST_HOST)"
