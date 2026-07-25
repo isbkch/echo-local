@@ -8,11 +8,13 @@ options:
 
 packages:
   KokoroSwift:
-    url: https://github.com/mlalma/kokoro-ios.git
-    exactVersion: 1.0.11
+    # Coordinated Kokoro/Misaki patch for upstream kokoro-ios PR #29. Both
+    # manifests must allow MLX 0.30.6 or SwiftPM resolves the broken 0.30.2.
+    url: https://github.com/dakshaymehta/kokoro-ios.git
+    revision: 411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09
   MLXSwift:
     url: https://github.com/ml-explore/mlx-swift.git
-    exactVersion: 0.30.2
+    exactVersion: 0.30.6
 
 targets:
   EchoLocal:

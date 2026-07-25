@@ -3,7 +3,7 @@ import XCTest
 @testable import EchoLocal
 
 final class KokoroInferenceSmokeTests: XCTestCase {
-    func testKokoroProducesAudibleSamplesWhenSmokeModelIsAvailable() async throws {
+    func testKokoroProducesBoundedLongFormAudioWhenSmokeModelIsAvailable() async throws {
         let fallbackDirectory = URL(
             fileURLWithPath: "/tmp/echo-local-smoke-model",
             isDirectory: true
@@ -25,12 +25,18 @@ final class KokoroInferenceSmokeTests: XCTestCase {
         }
 
         let result = try await KokoroSpeechEngine().synthesize(
-            text: "Local speech, generated entirely on this Mac.",
+            text: """
+            Biotech labs, hospital storage, and clean rooms rely on thousands of sensors \
+            across hundreds of facilities. Those readings flow through a local system into \
+            a data platform where teams make careful compliance decisions. Clear, dependable \
+            speech matters because every sentence should remain easy to understand from \
+            beginning to end, without static, tones, or missing sections.
+            """,
             settings: SpeechSettings(
                 voice: KokoroVoice.voice(withID: "af_heart"),
                 speed: 1,
                 paragraphPause: 0.4,
-                normalizesAudio: true,
+                normalizesAudio: false,
                 trimsSilence: true
             ),
             modelURL: modelURL,
@@ -39,7 +45,14 @@ final class KokoroInferenceSmokeTests: XCTestCase {
         )
 
         XCTAssertEqual(result.sampleRate, 24_000)
-        XCTAssertGreaterThan(result.duration, 1)
-        XCTAssertGreaterThan(result.samples.map(abs).max() ?? 0, 0.05)
+        XCTAssertGreaterThan(result.duration, 10)
+
+        let peak = result.samples.map(abs).max() ?? 0
+        XCTAssertGreaterThan(peak, 0.05)
+        XCTAssertLessThan(
+            peak,
+            2,
+            "Unbounded samples indicate corrupted MLX transposed-convolution output."
+        )
     }
 }

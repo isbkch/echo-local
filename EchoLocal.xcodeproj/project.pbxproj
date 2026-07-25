@@ -248,7 +248,7 @@
 			mainGroup = 2C32921003292E39AEA98BAF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				FFCD8071EEAB15533A500EB8 /* XCRemoteSwiftPackageReference "kokoro-ios" */,
+				5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */,
 				3EC7D5283432EA4A90A1DC94 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -559,15 +559,15 @@
 			repositoryURL = "https://github.com/ml-explore/mlx-swift.git";
 			requirement = {
 				kind = exactVersion;
-				version = 0.30.2;
+				version = 0.30.6;
 			};
 		};
-		FFCD8071EEAB15533A500EB8 /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
+		5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mlalma/kokoro-ios.git";
+			repositoryURL = "https://github.com/dakshaymehta/kokoro-ios.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.11;
+				kind = revision;
+				revision = 411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -575,7 +575,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		5ED8BD2848E32CE733491BD2 /* KokoroSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FFCD8071EEAB15533A500EB8 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
+			package = 5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
 			productName = KokoroSwift;
 		};
 		63725182199955D75243A072 /* MLX */ = {

@@ -1,22 +1,21 @@
 {
-  "originHash" : "02b0cf13d8919a2ff7b9805d785f32e4fb1be85c5251fc7630514f380cd90e30",
+  "originHash" : "92f451c0e9a22b72ca37275e15610829906e5d0242849a2db0159154552139bf",
   "pins" : [
     {
       "identity" : "kokoro-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mlalma/kokoro-ios.git",
+      "location" : "https://github.com/dakshaymehta/kokoro-ios.git",
       "state" : {
-        "revision" : "4d6d1d8ff8cd012014180c9cd4cf0151e7682354",
-        "version" : "1.0.11"
+        "revision" : "411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09"
       }
     },
     {
       "identity" : "misakiswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mlalma/MisakiSwift",
+      "location" : "https://github.com/dakshaymehta/MisakiSwift",
       "state" : {
-        "revision" : "6835a1ce4a8854075c89f18ff75c74b13ef58e15",
-        "version" : "1.0.6"
+        "revision" : "ed0844b97400313238eb5915b48501c61bf31705",
+        "version" : "1.0.7"
       }
     },
     {
@@ -24,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ml-explore/mlx-swift.git",
       "state" : {
-        "revision" : "f58bd2c2b3b84316da69182f436db4219aff30b9",
-        "version" : "0.30.2"
+        "revision" : "6ba4827fb82c97d012eec9ab4b2de21f85c3b33d",
+        "version" : "0.30.6"
       }
     },
     {

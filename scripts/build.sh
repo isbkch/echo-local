@@ -52,7 +52,7 @@ verify_rpath_dependencies() {
     fi
   done < <(
     otool -arch arm64 -L "$binary_path" \
-      | awk '/^[[:space:]]+@rpath\\// { print $1 }'
+      | awk '/^[[:space:]]+@rpath\// { print $1 }'
   )
 }
 
