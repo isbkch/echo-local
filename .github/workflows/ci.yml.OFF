@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Test
+        run: >-
+          xcodebuild
+          -project EchoLocal.xcodeproj
+          -scheme EchoLocal
+          -configuration Debug
+          -derivedDataPath .build
+          test
+          CODE_SIGNING_ALLOWED=NO

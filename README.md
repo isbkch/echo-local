@@ -23,7 +23,7 @@ Echolocal runs [KokoroSwift](https://github.com/mlalma/kokoro-ios) on Apple sili
 ## Quick start
 
 ```sh
-git clone git@github.com:isbkch/EchoLocal.git
+git clone git@github.com:isbkch/echo-local.git
 cd echo-local
 brew install xcodegen
 ./scripts/build.sh

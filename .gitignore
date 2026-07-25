@@ -1,0 +1,15 @@
+.DS_Store
+.build/
+DerivedData/
+xcuserdata/
+*.xcuserdatad/
+*.xcuserstate
+
+# Local model assets, generated speech, and release artifacts
+*.safetensors
+*.download
+*.wav
+*.app
+*.dmg
+*.xcarchive
+AGENTS.md
