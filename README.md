@@ -4,6 +4,8 @@
 
 Echolocal runs [KokoroSwift](https://github.com/mlalma/kokoro-ios) on Apple silicon through [MLX Swift](https://github.com/ml-explore/mlx-swift). Once the optional model is installed, synthesis, audio processing, and export happen locally. Your text is never sent to a server.
 
+![Echolocal showing its local text-to-speech editor, voice controls, and generated audio waveform](docs/images/echolocal-product-screenshot.png)
+
 ## Highlights
 
 - Paste or write long-form text in a distraction-free editor.
