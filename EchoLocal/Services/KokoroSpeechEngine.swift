@@ -122,15 +122,15 @@ final class KokoroSpeechEngine: @unchecked Sendable {
                         }
                     )
 
-                    let finished = AudioProcessor.finish(
-                        combined,
+                    AudioProcessor.finishInPlace(
+                        &combined,
                         sampleRate: sampleRate,
                         normalize: settings.normalizesAudio,
                         trimSilence: false
                     )
 
                     continuation.resume(
-                        returning: SpeechSynthesisResult(samples: finished, sampleRate: sampleRate)
+                        returning: SpeechSynthesisResult(samples: combined, sampleRate: sampleRate)
                     )
                 } catch {
                     continuation.resume(throwing: error)

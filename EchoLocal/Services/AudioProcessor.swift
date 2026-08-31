@@ -7,20 +7,37 @@ enum AudioProcessor {
         normalize: Bool,
         trimSilence: Bool
     ) -> [Float] {
-        guard !samples.isEmpty else { return [] }
+        var output = samples
+        finishInPlace(
+            &output,
+            sampleRate: sampleRate,
+            normalize: normalize,
+            trimSilence: trimSilence
+        )
+        return output
+    }
 
-        var output = samples.map { $0.isFinite ? $0 : 0 }
+    static func finishInPlace(
+        _ samples: inout [Float],
+        sampleRate: Double,
+        normalize: Bool,
+        trimSilence: Bool
+    ) {
+        guard !samples.isEmpty else { return }
+
+        for index in samples.indices where !samples[index].isFinite {
+            samples[index] = 0
+        }
 
         if trimSilence {
-            output = trim(output, sampleRate: sampleRate)
+            samples = trim(samples, sampleRate: sampleRate)
         }
 
         if normalize {
-            output = normalizePeak(output)
+            normalizePeak(&samples)
         }
 
-        applyEdgeFade(to: &output, sampleRate: sampleRate)
-        return output
+        applyEdgeFade(to: &samples, sampleRate: sampleRate)
     }
 
     static func silence(duration: TimeInterval, sampleRate: Double) -> [Float] {
@@ -52,13 +69,15 @@ enum AudioProcessor {
         return Array(samples[lower...upper])
     }
 
-    private static func normalizePeak(_ samples: [Float]) -> [Float] {
+    private static func normalizePeak(_ samples: inout [Float]) {
         let peak = samples.reduce(Float.zero) { max($0, abs($1)) }
-        guard peak > 0.0001 else { return samples }
+        guard peak > 0.0001 else { return }
 
         let target = pow(10.0 as Float, -1.0 / 20.0)
         let gain = min(target / peak, 6)
-        return samples.map { min(max($0 * gain, -1), 1) }
+        for index in samples.indices {
+            samples[index] = min(max(samples[index] * gain, -1), 1)
+        }
     }
 
     private static func applyEdgeFade(to samples: inout [Float], sampleRate: Double) {
@@ -72,4 +91,3 @@ enum AudioProcessor {
         }
     }
 }
-

@@ -1,8 +1,17 @@
-import AppKit
 import Combine
 import Foundation
 import KokoroSwift
 import UniformTypeIdentifiers
+#if os(macOS)
+import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
+
+struct WAVExportArtifact: Identifiable {
+    let id = UUID()
+    let url: URL
+}
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -35,6 +44,7 @@ final class AppModel: ObservableObject {
     }
     @Published private(set) var workState: WorkState = .idle
     @Published private(set) var waveform: [Float] = []
+    @Published private(set) var exportArtifact: WAVExportArtifact?
 
     let modelStore: ModelStore
     let player: AudioPlayerController
@@ -120,7 +130,11 @@ final class AppModel: ObservableObject {
     }
 
     func pasteFromClipboard() {
+        #if os(macOS)
         guard let clipboardText = NSPasteboard.general.string(forType: .string) else { return }
+        #else
+        guard let clipboardText = UIPasteboard.general.string else { return }
+        #endif
         text = clipboardText
     }
 
@@ -188,6 +202,7 @@ final class AppModel: ObservableObject {
     func exportWAV() {
         guard !audioSamples.isEmpty else { return }
 
+        #if os(macOS)
         let panel = NSSavePanel()
         panel.title = "Export generated speech"
         panel.nameFieldLabel = "Save as:"
@@ -215,9 +230,37 @@ final class AppModel: ObservableObject {
                 }
             }
         }
+        #else
+        workState = .exporting
+        let samples = audioSamples
+        let sampleRate = audioSampleRate
+        let exportDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Echolocal-Exports", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let destination = exportDirectory.appendingPathComponent(suggestedFileName())
+
+        Task.detached(priority: .userInitiated) {
+            do {
+                try FileManager.default.createDirectory(
+                    at: exportDirectory,
+                    withIntermediateDirectories: true
+                )
+                try WAVEncoder.write(samples: samples, sampleRate: sampleRate, to: destination)
+                await MainActor.run {
+                    self.exportArtifact = WAVExportArtifact(url: destination)
+                    self.workState = .ready(Double(samples.count) / sampleRate)
+                }
+            } catch {
+                await MainActor.run {
+                    self.workState = .failed("WAV export failed: \(error.localizedDescription)")
+                }
+            }
+        }
+        #endif
     }
 
     func chooseExistingModelFolder() {
+        #if os(macOS)
         let panel = NSOpenPanel()
         panel.title = "Choose a Kokoro model folder"
         panel.message = "Select a folder containing kokoro-v1_0.safetensors and the five Echolocal voice files."
@@ -234,6 +277,11 @@ final class AppModel: ObservableObject {
                 self.workState = .failed(error.localizedDescription)
             }
         }
+        #endif
+    }
+
+    func clearExportArtifact() {
+        exportArtifact = nil
     }
 
     private func friendlyError(_ error: Error) -> String {

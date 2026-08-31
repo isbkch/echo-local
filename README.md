@@ -1,8 +1,8 @@
 # Echolocal
 
-**A focused, native macOS app for turning pasted text into natural speech on your own Mac.**
+**A focused native app for turning pasted text into natural speech on your Mac or iPhone.**
 
-Echolocal runs [KokoroSwift](https://github.com/mlalma/kokoro-ios) on Apple silicon through [MLX Swift](https://github.com/ml-explore/mlx-swift). Once the optional model is installed, synthesis, audio processing, and export happen locally. Your text is never sent to a server.
+Echolocal runs [KokoroSwift](https://github.com/mlalma/kokoro-ios) on Apple silicon through [MLX Swift](https://github.com/ml-explore/mlx-swift). Once the model is installed, synthesis, audio processing, playback, and export happen locally. Your text is never sent to a server.
 
 ![Echolocal showing its local text-to-speech editor, voice controls, and generated audio waveform](docs/images/echolocal-product-screenshot.png)
 
@@ -65,15 +65,31 @@ xcodegen generate
 open EchoLocal.xcodeproj
 ```
 
+Use the `EchoLocal` scheme for macOS and `EchoLocaliOS` for iPhone and iPad. The iOS interface can be developed in Simulator, but MLX inference must be verified on a physical device. A signing-free device build can be checked from the command line:
+
+```sh
+IOS_DERIVED_DATA=$(mktemp -d /tmp/echolocal-ios-build.XXXXXX)
+xcodebuild \
+  -project EchoLocal.xcodeproj \
+  -scheme EchoLocaliOS \
+  -configuration Debug \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath "$IOS_DERIVED_DATA" \
+  build \
+  CODE_SIGNING_ALLOWED=NO
+```
+
+Before calling an iPhone release ready, install it on a physical device, complete the one-time model download, enable Airplane Mode, force-quit and relaunch, then generate, play, scrub, and share a WAV. Record cold and warm generation time plus peak memory for the oldest supported device. A simulator pass does not prove MLX inference or iOS memory stability.
+
 ## Install the optional local model
 
-At first launch, choose **Download local model**. The app downloads about 330 MB to:
+At first launch, choose **Download local model**. The app downloads about 330 MB. On macOS it is stored at:
 
 ```text
 ~/Library/Application Support/Echolocal/Kokoro/
 ```
 
-You can instead choose **Use existing model files…** and select a folder containing:
+On macOS, you can instead choose **Use existing model files…** and select a folder containing:
 
 ```text
 kokoro-v1_0.safetensors
@@ -88,17 +104,18 @@ Model weights and voice embeddings are intentionally excluded from this reposito
 
 ## Privacy
 
-The App Sandbox is enabled. Network access is used only for an explicit model download; file access is limited to locations you select through macOS system panels. After the model is installed, generation and WAV export are entirely local.
+Network access is used only when you explicitly download the model. After it is installed, generation, playback, and WAV export are entirely local and continue to work in Airplane Mode. The iPhone share sheet is opened only when you choose to export a generated WAV.
 
 ## Test
 
 ```sh
 xcodegen generate
+TEST_DERIVED_DATA=$(mktemp -d /tmp/echolocal-tests.XXXXXX)
 xcodebuild \
   -project EchoLocal.xcodeproj \
   -scheme EchoLocal \
   -configuration Debug \
-  -derivedDataPath .build \
+  -derivedDataPath "$TEST_DERIVED_DATA" \
   test \
   CODE_SIGNING_ALLOWED=NO
 ```
