@@ -12,7 +12,7 @@ packages:
     # Coordinated static Kokoro/Misaki packages keep one MLX runtime in the app.
     # The fork also retains the MLX 0.30.6 compatibility patch used on A18 devices.
     url: https://github.com/isbkch/kokoro-ios.git
-    revision: a2157ef492031754ad2b6def8f537a8a393ffd44
+    revision: 7553fde9877f93bf5342207184217044435b4106
   MLXSwift:
     url: https://github.com/ml-explore/mlx-swift.git
     exactVersion: 0.30.6
@@ -38,6 +38,8 @@ targets:
         PRODUCT_MODULE_NAME: EchoLocal
         SWIFT_VERSION: 5.0
         ENABLE_HARDENED_RUNTIME: YES
+        "DEVELOPMENT_TEAM[sdk=macosx*]": DXXRLD35US
+        "PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]": ""
         CODE_SIGN_ENTITLEMENTS: EchoLocal/EchoLocal.entitlements
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: EchoLocal/Info.plist
@@ -87,6 +89,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.isbkch.echolocal
         PRODUCT_NAME: Echolocal
         PRODUCT_MODULE_NAME: EchoLocal
+        DEVELOPMENT_TEAM: DXXRLD35US
         SWIFT_VERSION: 5.0
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Echolocal
@@ -99,7 +102,10 @@ targets:
         CURRENT_PROJECT_VERSION: 1
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
     scheme:
       testTargets:
         - EchoLocaliOSTests
@@ -118,5 +124,9 @@ targets:
         PRODUCT_MODULE_NAME: EchoLocalTests
         SWIFT_VERSION: 5.0
         GENERATE_INFOPLIST_FILE: YES
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Echolocal.app/Echolocal"
         BUNDLE_LOADER: "$(TEST_HOST)"

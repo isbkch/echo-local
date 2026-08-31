@@ -6,7 +6,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/isbkch/kokoro-ios.git",
       "state" : {
-        "revision" : "a2157ef492031754ad2b6def8f537a8a393ffd44"
+        "revision" : "7553fde9877f93bf5342207184217044435b4106"
       }
     },
     {
@@ -14,7 +14,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/isbkch/MisakiSwift.git",
       "state" : {
-        "revision" : "f76ff0b24f41025887a910284e79c6c2c5d69755"
+        "revision" : "98cb2859daa91f33ffefd25e48b0c5073013a2a3"
       }
     },
     {
