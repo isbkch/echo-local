@@ -114,7 +114,7 @@
 		7C33D31FE7BF24337BA8DE97 /* KokoroInferenceSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroInferenceSmokeTests.swift; sourceTree = "<group>"; };
 		921F75C25622003F1A870093 /* AudioProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessor.swift; sourceTree = "<group>"; };
 		92F336CAEB97BB69E920897A /* EditorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPane.swift; sourceTree = "<group>"; };
-		9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EchoLocaliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CA8A3196E81642A4E9F19D0 /* Echolocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Echolocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1A7207D7BB68948076A968C /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
 		B7C9884F24026F012AAFAEC6 /* AudioPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerController.swift; sourceTree = "<group>"; };
 		B8CECDAE8DC7C08A63F079FA /* WAVEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WAVEncoder.swift; sourceTree = "<group>"; };
@@ -123,7 +123,7 @@
 		ED2D3E1F742E93F407C20FA1 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		F540B871D61B8D9F02FE1019 /* KokoroSpeechEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroSpeechEngine.swift; sourceTree = "<group>"; };
 		F578FC7A4C6000A6EA900DB1 /* ModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStore.swift; sourceTree = "<group>"; };
-		F7D1A96D39457C47FB09AB4F /* EchoLocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EchoLocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7D1A96D39457C47FB09AB4F /* Echolocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Echolocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1255D1D3E2B3AE83D69B99 /* IPhoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPhoneContentView.swift; sourceTree = "<group>"; };
 		FDABD302D4BDBC397B3B7179 /* KokoroVoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroVoice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -195,8 +195,8 @@
 		74F028BCE3A6EC99EA94DA5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F7D1A96D39457C47FB09AB4F /* EchoLocal.app */,
-				9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */,
+				F7D1A96D39457C47FB09AB4F /* Echolocal.app */,
+				9CA8A3196E81642A4E9F19D0 /* Echolocal.app */,
 				40D62E90B4FF22342A63A9E4 /* EchoLocaliOSTests.xctest */,
 				75858B9928D29D693FD1E9A0 /* EchoLocalTests.xctest */,
 			);
@@ -279,7 +279,7 @@
 				63725182199955D75243A072 /* MLX */,
 			);
 			productName = EchoLocal;
-			productReference = F7D1A96D39457C47FB09AB4F /* EchoLocal.app */;
+			productReference = F7D1A96D39457C47FB09AB4F /* Echolocal.app */;
 			productType = "com.apple.product-type.application";
 		};
 		9DA8AB6E01321FE689DA23FA /* EchoLocaliOS */ = {
@@ -301,7 +301,7 @@
 				2D1B537EA94B96AC4854C160 /* MLX */,
 			);
 			productName = EchoLocaliOS;
-			productReference = 9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */;
+			productReference = 9CA8A3196E81642A4E9F19D0 /* Echolocal.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FEE6A3BBD6BC9C2F628E85C9 /* EchoLocaliOSTests */ = {
@@ -330,8 +330,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 351ED34C11E739B4AB0A4D2F /* Build configuration list for PBXProject "EchoLocal" */;
 			developmentRegion = en;
@@ -622,7 +620,10 @@
 				PRODUCT_MODULE_NAME = EchoLocal;
 				PRODUCT_NAME = Echolocal;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -635,6 +636,7 @@
 				CODE_SIGN_ENTITLEMENTS = EchoLocal/EchoLocal.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = DXXRLD35US;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EchoLocal/Info.plist;
@@ -658,6 +660,7 @@
 				CODE_SIGN_ENTITLEMENTS = EchoLocal/EchoLocal.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = DXXRLD35US;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EchoLocal/Info.plist;
@@ -734,7 +737,10 @@
 				PRODUCT_MODULE_NAME = EchoLocal;
 				PRODUCT_NAME = Echolocal;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
