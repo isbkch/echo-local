@@ -10,7 +10,6 @@
 		06128475B71778340E8B4BC8 /* TransportBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74C7F7D03B9B3A8942476CA1 /* TransportBar.swift */; };
 		0A96756D328EC29AD5EF3295 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01448C727D3CEEEB5614C38E /* ContentView.swift */; };
 		172B04715C5A643DBF32C688 /* KokoroVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDABD302D4BDBC397B3B7179 /* KokoroVoice.swift */; };
-		2756435A953083B4CC21ABFE /* KokoroSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 3262D17CD670139865F076C4 /* KokoroSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		30F67D4B65F0BBCBA9A1E4B1 /* KokoroSpeechEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F540B871D61B8D9F02FE1019 /* KokoroSpeechEngine.swift */; };
 		34512C71B527977C7DE7A872 /* WAVEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CECDAE8DC7C08A63F079FA /* WAVEncoder.swift */; };
 		3594DABCACDD582E7E81028F /* MLX in Frameworks */ = {isa = PBXBuildFile; productRef = 63725182199955D75243A072 /* MLX */; };
@@ -36,7 +35,6 @@
 		95922E55190E4607AABEFC11 /* WAVEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577F4C0D53F0C329B3FFCE56 /* WAVEncoderTests.swift */; };
 		97AD7E122215AB062393F41D /* MLX in Frameworks */ = {isa = PBXBuildFile; productRef = 2D1B537EA94B96AC4854C160 /* MLX */; };
 		97E6C010F52760135AC02BDF /* InspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FC76E061DF29F9B7397E1B /* InspectorPane.swift */; };
-		9B77CD2CAC5DAF2155164941 /* KokoroSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 5ED8BD2848E32CE733491BD2 /* KokoroSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABB1B847614A83E2607BDC27 /* TextChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480D24FCE0D44504CE1B933C /* TextChunker.swift */; };
 		B11CCD722A17371F8FC24550 /* KokoroVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDABD302D4BDBC397B3B7179 /* KokoroVoice.swift */; };
 		B14AE2002FFF63DBDF640BEF /* TextChunkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CD9F380E222A13B6DF42E03 /* TextChunkerTests.swift */; };
@@ -73,31 +71,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		0D10E8ECF33912FDDA8224E9 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				9B77CD2CAC5DAF2155164941 /* KokoroSwift in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		193FD1FCB389CEC59AD5FD4B /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				2756435A953083B4CC21ABFE /* KokoroSwift in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		01448C727D3CEEEB5614C38E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1CD9F380E222A13B6DF42E03 /* TextChunkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextChunkerTests.swift; sourceTree = "<group>"; };
@@ -114,7 +87,7 @@
 		7C33D31FE7BF24337BA8DE97 /* KokoroInferenceSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroInferenceSmokeTests.swift; sourceTree = "<group>"; };
 		921F75C25622003F1A870093 /* AudioProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessor.swift; sourceTree = "<group>"; };
 		92F336CAEB97BB69E920897A /* EditorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPane.swift; sourceTree = "<group>"; };
-		9CA8A3196E81642A4E9F19D0 /* Echolocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Echolocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EchoLocaliOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1A7207D7BB68948076A968C /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
 		B7C9884F24026F012AAFAEC6 /* AudioPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerController.swift; sourceTree = "<group>"; };
 		B8CECDAE8DC7C08A63F079FA /* WAVEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WAVEncoder.swift; sourceTree = "<group>"; };
@@ -123,7 +96,7 @@
 		ED2D3E1F742E93F407C20FA1 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		F540B871D61B8D9F02FE1019 /* KokoroSpeechEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroSpeechEngine.swift; sourceTree = "<group>"; };
 		F578FC7A4C6000A6EA900DB1 /* ModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStore.swift; sourceTree = "<group>"; };
-		F7D1A96D39457C47FB09AB4F /* Echolocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Echolocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7D1A96D39457C47FB09AB4F /* EchoLocal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EchoLocal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1255D1D3E2B3AE83D69B99 /* IPhoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPhoneContentView.swift; sourceTree = "<group>"; };
 		FDABD302D4BDBC397B3B7179 /* KokoroVoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KokoroVoice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -195,8 +168,8 @@
 		74F028BCE3A6EC99EA94DA5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F7D1A96D39457C47FB09AB4F /* Echolocal.app */,
-				9CA8A3196E81642A4E9F19D0 /* Echolocal.app */,
+				F7D1A96D39457C47FB09AB4F /* EchoLocal.app */,
+				9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */,
 				40D62E90B4FF22342A63A9E4 /* EchoLocaliOSTests.xctest */,
 				75858B9928D29D693FD1E9A0 /* EchoLocalTests.xctest */,
 			);
@@ -267,7 +240,6 @@
 				1AE83DBFF3DC4D3604872887 /* Sources */,
 				09747786581475921265D0FB /* Resources */,
 				D791A3E344B14E62C0D93BCA /* Frameworks */,
-				0D10E8ECF33912FDDA8224E9 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -279,7 +251,7 @@
 				63725182199955D75243A072 /* MLX */,
 			);
 			productName = EchoLocal;
-			productReference = F7D1A96D39457C47FB09AB4F /* Echolocal.app */;
+			productReference = F7D1A96D39457C47FB09AB4F /* EchoLocal.app */;
 			productType = "com.apple.product-type.application";
 		};
 		9DA8AB6E01321FE689DA23FA /* EchoLocaliOS */ = {
@@ -289,7 +261,6 @@
 				0D2039E7D1B7CBF4A087E7D4 /* Sources */,
 				E4B1BB3650E865654E572B3D /* Resources */,
 				3DF614EC44F2215A037DB2A3 /* Frameworks */,
-				193FD1FCB389CEC59AD5FD4B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -301,7 +272,7 @@
 				2D1B537EA94B96AC4854C160 /* MLX */,
 			);
 			productName = EchoLocaliOS;
-			productReference = 9CA8A3196E81642A4E9F19D0 /* Echolocal.app */;
+			productReference = 9CA8A3196E81642A4E9F19D0 /* EchoLocaliOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FEE6A3BBD6BC9C2F628E85C9 /* EchoLocaliOSTests */ = {
@@ -330,6 +301,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 351ED34C11E739B4AB0A4D2F /* Build configuration list for PBXProject "EchoLocal" */;
 			developmentRegion = en;
@@ -341,7 +314,7 @@
 			mainGroup = 2C32921003292E39AEA98BAF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */,
+				B550272D516DAFD52CAB86DB /* XCRemoteSwiftPackageReference "kokoro-ios" */,
 				3EC7D5283432EA4A90A1DC94 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -620,10 +593,7 @@
 				PRODUCT_MODULE_NAME = EchoLocal;
 				PRODUCT_NAME = Echolocal;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -636,7 +606,6 @@
 				CODE_SIGN_ENTITLEMENTS = EchoLocal/EchoLocal.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = DXXRLD35US;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EchoLocal/Info.plist;
@@ -660,7 +629,6 @@
 				CODE_SIGN_ENTITLEMENTS = EchoLocal/EchoLocal.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = DXXRLD35US;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EchoLocal/Info.plist;
@@ -737,10 +705,7 @@
 				PRODUCT_MODULE_NAME = EchoLocal;
 				PRODUCT_NAME = Echolocal;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -824,12 +789,12 @@
 				version = 0.30.6;
 			};
 		};
-		5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
+		B550272D516DAFD52CAB86DB /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/dakshaymehta/kokoro-ios.git";
+			repositoryURL = "https://github.com/isbkch/kokoro-ios.git";
 			requirement = {
 				kind = revision;
-				revision = 411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09;
+				revision = a2157ef492031754ad2b6def8f537a8a393ffd44;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -842,12 +807,12 @@
 		};
 		3262D17CD670139865F076C4 /* KokoroSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
+			package = B550272D516DAFD52CAB86DB /* XCRemoteSwiftPackageReference "kokoro-ios" */;
 			productName = KokoroSwift;
 		};
 		5ED8BD2848E32CE733491BD2 /* KokoroSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5BD6A4392656799FF54A1933 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
+			package = B550272D516DAFD52CAB86DB /* XCRemoteSwiftPackageReference "kokoro-ios" */;
 			productName = KokoroSwift;
 		};
 		63725182199955D75243A072 /* MLX */ = {

@@ -1,21 +1,20 @@
 {
-  "originHash" : "92f451c0e9a22b72ca37275e15610829906e5d0242849a2db0159154552139bf",
+  "originHash" : "3609defcbb1bbabc1bfe3a8016a9a9a222cbd62604502c4c0589e246833225a2",
   "pins" : [
     {
       "identity" : "kokoro-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/dakshaymehta/kokoro-ios.git",
+      "location" : "https://github.com/isbkch/kokoro-ios.git",
       "state" : {
-        "revision" : "411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09"
+        "revision" : "a2157ef492031754ad2b6def8f537a8a393ffd44"
       }
     },
     {
       "identity" : "misakiswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/dakshaymehta/MisakiSwift",
+      "location" : "https://github.com/isbkch/MisakiSwift.git",
       "state" : {
-        "revision" : "ed0844b97400313238eb5915b48501c61bf31705",
-        "version" : "1.0.7"
+        "revision" : "f76ff0b24f41025887a910284e79c6c2c5d69755"
       }
     },
     {

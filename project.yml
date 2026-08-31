@@ -9,10 +9,10 @@ options:
 
 packages:
   KokoroSwift:
-    # Coordinated Kokoro/Misaki patch for upstream kokoro-ios PR #29. Both
-    # manifests must allow MLX 0.30.6 or SwiftPM resolves the broken 0.30.2.
-    url: https://github.com/dakshaymehta/kokoro-ios.git
-    revision: 411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09
+    # Coordinated static Kokoro/Misaki packages keep one MLX runtime in the app.
+    # The fork also retains the MLX 0.30.6 compatibility patch used on A18 devices.
+    url: https://github.com/isbkch/kokoro-ios.git
+    revision: a2157ef492031754ad2b6def8f537a8a393ffd44
   MLXSwift:
     url: https://github.com/ml-explore/mlx-swift.git
     exactVersion: 0.30.6
@@ -29,7 +29,6 @@ targets:
     dependencies:
       - package: KokoroSwift
         product: KokoroSwift
-        embed: true
       - package: MLXSwift
         product: MLX
     settings:
@@ -81,7 +80,6 @@ targets:
     dependencies:
       - package: KokoroSwift
         product: KokoroSwift
-        embed: true
       - package: MLXSwift
         product: MLX
     settings:

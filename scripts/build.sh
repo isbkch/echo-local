@@ -44,27 +44,24 @@ xcodebuild \
   -scheme EchoLocal \
   -configuration Release \
   -derivedDataPath .build \
+  clean \
   build \
   CODE_SIGNING_ALLOWED=NO \
   "${build_setting_overrides[@]}"
 
 APP_PATH="$PROJECT_DIR/.build/Build/Products/Release/Echolocal.app"
 APP_FRAMEWORKS="$APP_PATH/Contents/Frameworks"
-PACKAGE_FRAMEWORKS="$PROJECT_DIR/.build/Build/Products/Release/PackageFrameworks"
-KOKORO_SOURCE="$PACKAGE_FRAMEWORKS/KokoroSwift.framework"
-KOKORO_DESTINATION="$APP_FRAMEWORKS/KokoroSwift.framework"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Echolocal"
 
-if [[ ! -x "$KOKORO_SOURCE/Versions/A/KokoroSwift" ]]; then
-  print -u2 "Build failed: KokoroSwift.framework was not produced."
-  exit 1
-fi
-
-# Xcode 27 beta links this dynamic Swift package but intermittently omits its
-# top-level framework from the app's embed phase. Copy it explicitly so the
-# distributable bundle never depends on DerivedData.
-mkdir -p "$APP_FRAMEWORKS"
-ditto "$KOKORO_SOURCE" "$KOKORO_DESTINATION"
+# Kokoro and Misaki are deliberately static. Embedding either framework would
+# load a second copy of MLX and recreate the Objective-C class collisions this
+# packaging topology is designed to prevent.
+for forbidden_framework in KokoroSwift.framework MisakiSwift.framework; do
+  if [[ -e "$APP_FRAMEWORKS/$forbidden_framework" ]]; then
+    print -u2 "Build failed: static package was unexpectedly embedded as $forbidden_framework"
+    exit 1
+  fi
+done
 
 verify_rpath_dependencies() {
   local binary_path=$1
@@ -84,7 +81,6 @@ verify_rpath_dependencies() {
 }
 
 verify_rpath_dependencies "$APP_EXECUTABLE"
-verify_rpath_dependencies "$KOKORO_DESTINATION/Versions/A/KokoroSwift"
 
 sign_code() {
   local target=$1
@@ -102,8 +98,6 @@ sign_code() {
 # Local builds default to an ad-hoc signature. Release automation can provide
 # a Developer ID Application identity through ECHOLOCAL_SIGNING_IDENTITY; that
 # path enables hardened runtime and a secure timestamp for notarization.
-sign_code "$APP_FRAMEWORKS/MisakiSwift.framework"
-sign_code "$KOKORO_DESTINATION"
 sign_code "$APP_PATH" --entitlements EchoLocal/EchoLocal.entitlements
 
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
