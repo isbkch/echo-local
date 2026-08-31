@@ -1,0 +1,193 @@
+name: Package Release DMG
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing GitHub Release tag to package
+        required: true
+        type: string
+      replace_existing:
+        description: Replace DMG assets that already exist on the release
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: echolocal-release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Build and attach macOS installer
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      REPLACE_EXISTING: ${{ inputs.replace_existing || false }}
+      APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+      APPLE_NOTARY_KEY_BASE64: ${{ secrets.APPLE_NOTARY_KEY_BASE64 }}
+      APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+      APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
+
+    steps:
+      - name: Validate release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must use X.Y.Z or vX.Y.Z format: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          gh release view "$RELEASE_TAG" --json tagName --jq '.tagName'
+
+      - name: Check out released source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          path: source
+
+      # Keeping the release tooling separate lets workflow_dispatch package an
+      # older tag, including releases created before this workflow existed.
+      - name: Check out release tooling
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: release-tools
+
+      - name: Verify checked-out release commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/source"
+          tag_commit=$(git rev-list -n 1 "$RELEASE_TAG")
+          source_commit=$(git rev-parse HEAD)
+          [[ "$source_commit" == "$tag_commit" ]]
+          echo "Packaging $RELEASE_TAG at $source_commit"
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Test released source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/source"
+          xcodegen generate
+          xcodebuild \
+            -project EchoLocal.xcodeproj \
+            -scheme EchoLocal \
+            -configuration Debug \
+            -derivedDataPath "$RUNNER_TEMP/echolocal-tests" \
+            test \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Configure Developer ID signing when available
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          secrets=(
+            "$APPLE_CERTIFICATE_BASE64"
+            "$APPLE_CERTIFICATE_PASSWORD"
+            "$APPLE_NOTARY_KEY_BASE64"
+            "$APPLE_NOTARY_KEY_ID"
+            "$APPLE_NOTARY_ISSUER_ID"
+          )
+          configured=0
+          for secret_value in "${secrets[@]}"; do
+            if [[ -n "$secret_value" ]]; then
+              configured=$((configured + 1))
+            fi
+          done
+
+          if [[ "$configured" -eq 0 ]]; then
+            echo "ECHOLOCAL_SIGNING_IDENTITY=-" >> "$GITHUB_ENV"
+            echo "::warning::Apple release secrets are not configured. The DMG will be ad-hoc signed and will require a manual Gatekeeper override on first launch."
+            exit 0
+          fi
+
+          if [[ "$configured" -ne "${#secrets[@]}" ]]; then
+            echo "Apple release secrets are only partially configured; refusing to publish an ambiguous build." >&2
+            exit 1
+          fi
+
+          certificate_path="$RUNNER_TEMP/developer-id.p12"
+          notary_key_path="$RUNNER_TEMP/AuthKey_${APPLE_NOTARY_KEY_ID}.p8"
+          keychain_path="$RUNNER_TEMP/echolocal-signing.keychain-db"
+          keychain_password=$(uuidgen)
+
+          printf '%s' "$APPLE_CERTIFICATE_BASE64" | /usr/bin/base64 -D > "$certificate_path"
+          printf '%s' "$APPLE_NOTARY_KEY_BASE64" | /usr/bin/base64 -D > "$notary_key_path"
+          chmod 600 "$certificate_path" "$notary_key_path"
+
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -k "$keychain_path" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "$keychain_password" \
+            "$keychain_path"
+          security list-keychains -d user -s "$keychain_path"
+
+          signing_identity=$(security find-identity -v -p codesigning "$keychain_path" \
+            | awk -F'"' '/Developer ID Application/ { print $2; exit }')
+          if [[ -z "$signing_identity" ]]; then
+            echo "The imported certificate does not contain a Developer ID Application identity." >&2
+            exit 1
+          fi
+
+          {
+            echo "ECHOLOCAL_SIGNING_IDENTITY=$signing_identity"
+            echo "ECHOLOCAL_NOTARY_KEY=$notary_key_path"
+            echo "ECHOLOCAL_NOTARY_KEY_ID=$APPLE_NOTARY_KEY_ID"
+            echo "ECHOLOCAL_NOTARY_ISSUER_ID=$APPLE_NOTARY_ISSUER_ID"
+          } >> "$GITHUB_ENV"
+
+      - name: Build, package, and verify DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=${RELEASE_TAG#v}
+          ECHOLOCAL_PROJECT_DIR="$GITHUB_WORKSPACE/source" \
+          ECHOLOCAL_BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
+            "$GITHUB_WORKSPACE/release-tools/scripts/package-dmg.sh" "$version"
+
+      - name: Preserve packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Echolocal-${{ env.RELEASE_TAG }}-macOS
+          path: source/dist/*
+          if-no-files-found: error
+
+      - name: Attach installer to GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=${RELEASE_TAG#v}
+          dmg_path="$GITHUB_WORKSPACE/source/dist/Echolocal-$version.dmg"
+          checksum_path="$dmg_path.sha256"
+          upload_options=()
+
+          if [[ "$REPLACE_EXISTING" == "true" ]]; then
+            upload_options+=(--clobber)
+          fi
+
+          gh release upload "$RELEASE_TAG" \
+            "${dmg_path}#Echolocal $version for macOS" \
+            "${checksum_path}#SHA-256 checksum" \
+            "${upload_options[@]}"
