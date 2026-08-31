@@ -3,15 +3,16 @@ name: EchoLocal
 options:
   bundleIdPrefix: com.isbkch
   deploymentTarget:
+    iOS: "18.0"
     macOS: "15.0"
   createIntermediateGroups: true
 
 packages:
   KokoroSwift:
-    # Coordinated Kokoro/Misaki patch for upstream kokoro-ios PR #29. Both
-    # manifests must allow MLX 0.30.6 or SwiftPM resolves the broken 0.30.2.
-    url: https://github.com/dakshaymehta/kokoro-ios.git
-    revision: 411c4e8b6c813fbf2dd16bf7cb9b5362ab804e09
+    # Coordinated static Kokoro/Misaki packages keep one MLX runtime in the app.
+    # The fork also retains the MLX 0.30.6 compatibility patch used on A18 devices.
+    url: https://github.com/isbkch/kokoro-ios.git
+    revision: a2157ef492031754ad2b6def8f537a8a393ffd44
   MLXSwift:
     url: https://github.com/ml-explore/mlx-swift.git
     exactVersion: 0.30.6
@@ -28,7 +29,6 @@ targets:
     dependencies:
       - package: KokoroSwift
         product: KokoroSwift
-        embed: true
       - package: MLXSwift
         product: MLX
     settings:
@@ -62,4 +62,61 @@ targets:
         SWIFT_VERSION: 5.0
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Echolocal.app/Contents/MacOS/Echolocal"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+  EchoLocaliOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: EchoLocal
+        excludes:
+          - Info.plist
+          - EchoLocal.entitlements
+          - Views/ContentView.swift
+          - Views/EditorPane.swift
+          - Views/InspectorPane.swift
+          - Views/ModelSetupView.swift
+          - Views/TransportBar.swift
+    dependencies:
+      - package: KokoroSwift
+        product: KokoroSwift
+      - package: MLXSwift
+        product: MLX
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.isbkch.echolocal
+        PRODUCT_NAME: Echolocal
+        PRODUCT_MODULE_NAME: EchoLocal
+        SWIFT_VERSION: 5.0
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Echolocal
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: 1
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+    scheme:
+      testTargets:
+        - EchoLocaliOSTests
+      gatherCoverageData: true
+
+  EchoLocaliOSTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: EchoLocalTests
+    dependencies:
+      - target: EchoLocaliOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.isbkch.echolocal.tests.ios
+        PRODUCT_MODULE_NAME: EchoLocalTests
+        SWIFT_VERSION: 5.0
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Echolocal.app/Echolocal"
         BUNDLE_LOADER: "$(TEST_HOST)"

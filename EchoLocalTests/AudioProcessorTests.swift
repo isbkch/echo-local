@@ -38,5 +38,18 @@ final class AudioProcessorTests: XCTestCase {
         XCTAssertEqual(envelope.count, 100)
         XCTAssertTrue(envelope.allSatisfy { $0 >= 0 && $0 <= 1 })
     }
-}
 
+    func testInPlaceFinishingSanitizesAndNormalizesSamples() {
+        var samples: [Float] = [.nan, 0.2, -.infinity, -0.4, 0]
+
+        AudioProcessor.finishInPlace(
+            &samples,
+            sampleRate: 100,
+            normalize: true,
+            trimSilence: false
+        )
+
+        XCTAssertTrue(samples.allSatisfy(\.isFinite))
+        XCTAssertEqual(samples.map(abs).max() ?? 0, 0.891, accuracy: 0.002)
+    }
+}

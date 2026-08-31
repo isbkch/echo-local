@@ -32,6 +32,16 @@ final class AudioPlayerController: ObservableObject {
     init() {
         audioEngine.attach(playerNode)
         audioEngine.attach(timePitch)
+
+        #if os(iOS)
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .spokenAudio)
+            try session.setActive(true)
+        } catch {
+            errorMessage = "Audio playback could not be prepared: \(error.localizedDescription)"
+        }
+        #endif
     }
 
     func load(samples: [Float], sampleRate: Double) {

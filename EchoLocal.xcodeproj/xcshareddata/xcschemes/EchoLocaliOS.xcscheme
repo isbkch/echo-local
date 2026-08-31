@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "92AB487109B9F1DAB7926457"
+               BlueprintIdentifier = "9DA8AB6E01321FE689DA23FA"
                BuildableName = "Echolocal.app"
-               BlueprintName = "EchoLocal"
+               BlueprintName = "EchoLocaliOS"
                ReferencedContainer = "container:EchoLocal.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -31,9 +31,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "92AB487109B9F1DAB7926457"
+            BlueprintIdentifier = "9DA8AB6E01321FE689DA23FA"
             BuildableName = "Echolocal.app"
-            BlueprintName = "EchoLocal"
+            BlueprintName = "EchoLocaliOS"
             ReferencedContainer = "container:EchoLocal.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -43,9 +43,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "21E176A99FAF5A7A0BC35776"
-               BuildableName = "EchoLocalTests.xctest"
-               BlueprintName = "EchoLocalTests"
+               BlueprintIdentifier = "FEE6A3BBD6BC9C2F628E85C9"
+               BuildableName = "EchoLocaliOSTests.xctest"
+               BlueprintName = "EchoLocaliOSTests"
                ReferencedContainer = "container:EchoLocal.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -65,9 +65,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "92AB487109B9F1DAB7926457"
+            BlueprintIdentifier = "9DA8AB6E01321FE689DA23FA"
             BuildableName = "Echolocal.app"
-            BlueprintName = "EchoLocal"
+            BlueprintName = "EchoLocaliOS"
             ReferencedContainer = "container:EchoLocal.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -82,9 +82,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "92AB487109B9F1DAB7926457"
+            BlueprintIdentifier = "9DA8AB6E01321FE689DA23FA"
             BuildableName = "Echolocal.app"
-            BlueprintName = "EchoLocal"
+            BlueprintName = "EchoLocaliOS"
             ReferencedContainer = "container:EchoLocal.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
