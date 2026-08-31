@@ -28,6 +28,9 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     env:
+      # kokoro-ios requires Swift tools 6.2; macos-15 still defaults to
+      # Xcode 16.4 (Swift 6.1) even though Xcode 26 is installed.
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
       GH_TOKEN: ${{ github.token }}
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
       REPLACE_EXISTING: ${{ inputs.replace_existing || false }}
@@ -64,6 +67,13 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           path: release-tools
+
+      - name: Verify Swift 6.2 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun swift --version
 
       - name: Verify checked-out release commit
         shell: bash
