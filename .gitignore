@@ -13,4 +13,17 @@ xcuserdata/
 *.app
 *.dmg
 *.xcarchive
+
+# Local credentials and Apple signing material
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.pem
+*.key
+*.cer
+*.mobileprovision
+*.keychain-db
+
 AGENTS.md
