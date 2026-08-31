@@ -46,7 +46,10 @@ jobs:
             echo "Release tag must use X.Y.Z or vX.Y.Z format: $RELEASE_TAG" >&2
             exit 1
           fi
-          gh release view "$RELEASE_TAG" --json tagName --jq '.tagName'
+          gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json tagName \
+            --jq '.tagName'
 
       - name: Check out released source
         uses: actions/checkout@v4
@@ -188,6 +191,7 @@ jobs:
           fi
 
           gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
             "${dmg_path}#Echolocal $version for macOS" \
             "${checksum_path}#SHA-256 checksum" \
             "${upload_options[@]}"
