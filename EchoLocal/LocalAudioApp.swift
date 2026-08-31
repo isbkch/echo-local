@@ -1,10 +1,22 @@
 import SwiftUI
+#if os(iOS) && !targetEnvironment(simulator)
+import MLX
+#endif
 
 @main
 struct EchoLocalApp: App {
     @StateObject private var model = AppModel()
 
+    init() {
+        #if os(iOS) && !targetEnvironment(simulator)
+        // Keep MLX's reusable Metal buffers bounded below iOS's jetsam threshold.
+        Memory.cacheLimit = 50 * 1024 * 1024
+        Memory.memoryLimit = 900 * 1024 * 1024
+        #endif
+    }
+
     var body: some Scene {
+        #if os(macOS)
         Window("Echolocal", id: "main") {
             ContentView(model: model)
         }
@@ -34,5 +46,10 @@ struct EchoLocalApp: App {
                 .disabled(model.player.state == .empty)
             }
         }
+        #else
+        WindowGroup {
+            IPhoneContentView(model: model)
+        }
+        #endif
     }
 }

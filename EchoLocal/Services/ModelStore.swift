@@ -1,5 +1,7 @@
-import AppKit
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
 
 @MainActor
 final class ModelStore: ObservableObject {
@@ -107,10 +109,7 @@ final class ModelStore: ObservableObject {
             defer { downloadTask = nil }
 
             do {
-                try FileManager.default.createDirectory(
-                    at: storageDirectory,
-                    withIntermediateDirectories: true
-                )
+                try prepareStorageDirectory()
 
                 var completedBytes = Self.allAssets
                     .filter(isAssetValid)
@@ -163,10 +162,7 @@ final class ModelStore: ObservableObject {
             try validate(fileAt: source, as: asset)
         }
 
-        try FileManager.default.createDirectory(
-            at: storageDirectory,
-            withIntermediateDirectories: true
-        )
+        try prepareStorageDirectory()
 
         for asset in Self.allAssets {
             try install(
@@ -180,11 +176,13 @@ final class ModelStore: ObservableObject {
     }
 
     func revealModelFolder() {
+        #if os(macOS)
         try? FileManager.default.createDirectory(
             at: storageDirectory,
             withIntermediateDirectories: true
         )
         NSWorkspace.shared.activateFileViewerSelecting([modelURL])
+        #endif
     }
 
     private func friendlyName(for asset: RemoteAsset) -> String {
@@ -194,6 +192,20 @@ final class ModelStore: ObservableObject {
 
         let voiceID = asset.fileName.replacingOccurrences(of: ".safetensors", with: "")
         return "\(KokoroVoice.voice(withID: voiceID).name) voice"
+    }
+
+    private func prepareStorageDirectory() throws {
+        try FileManager.default.createDirectory(
+            at: storageDirectory,
+            withIntermediateDirectories: true
+        )
+
+        #if os(iOS)
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        var directory = storageDirectory
+        try directory.setResourceValues(resourceValues)
+        #endif
     }
 
     private func isAssetValid(_ asset: RemoteAsset) -> Bool {

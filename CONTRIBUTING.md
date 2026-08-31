@@ -4,7 +4,7 @@ Thanks for considering a contribution to Echolocal.
 
 ## Before opening a pull request
 
-- Keep the app local-first: text and generated audio must stay on the Mac unless a user explicitly chooses to download model files.
+- Keep the app local-first: text and generated audio must stay on the device. Network access is reserved for a user-initiated model download.
 - Do not add model weights, voice embeddings, generated audio, or build products to the repository.
 - Keep the main workflow focused: paste text, tune a voice, generate, play, and export.
 - Include tests for changed text processing, audio processing, or file-format behaviour.
@@ -13,10 +13,10 @@ Thanks for considering a contribution to Echolocal.
 
 1. Install Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 2. Run `xcodegen generate`.
-3. Open `EchoLocal.xcodeproj`, or build the release app with `./scripts/build.sh`.
+3. Open `EchoLocal.xcodeproj`. Use `EchoLocal` for macOS or `EchoLocaliOS` for iPhone and iPad; `./scripts/build.sh` builds the macOS release app.
 4. Run the test command in the [README](README.md#test).
 
-The inference smoke test is opt-in. Point `LOCAL_AUDIO_SMOKE_MODEL_DIR` at a directory containing `kokoro-v1_0.safetensors` and `af_heart.safetensors` to enable it locally.
+The inference smoke test is opt-in. Point `LOCAL_AUDIO_SMOKE_MODEL_DIR` at a directory containing `kokoro-v1_0.safetensors` and `af_heart.safetensors` to enable it locally. iOS inference must be exercised on a physical device because MLX inference is unavailable in Simulator.
 
 ## Pull requests
 

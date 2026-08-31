@@ -2,7 +2,14 @@
 set -euo pipefail
 
 SCRIPT_DIR=${0:A:h}
-PROJECT_DIR=${SCRIPT_DIR:h}
+DEFAULT_PROJECT_DIR=${SCRIPT_DIR:h}
+PROJECT_DIR=${ECHOLOCAL_PROJECT_DIR:-$DEFAULT_PROJECT_DIR}
+PROJECT_DIR=${PROJECT_DIR:A}
+SIGNING_IDENTITY=${ECHOLOCAL_SIGNING_IDENTITY:-}
+
+if [[ -z "$SIGNING_IDENTITY" ]]; then
+  SIGNING_IDENTITY="-"
+fi
 
 cd "$PROJECT_DIR"
 
@@ -13,31 +20,48 @@ fi
 
 xcodegen generate
 
+typeset -a build_setting_overrides
+build_setting_overrides=()
+
+if [[ -n "${ECHOLOCAL_VERSION:-}" ]]; then
+  if [[ ! "$ECHOLOCAL_VERSION" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
+    print -u2 "Build failed: ECHOLOCAL_VERSION must use X.Y.Z format."
+    exit 1
+  fi
+  build_setting_overrides+=(MARKETING_VERSION="$ECHOLOCAL_VERSION")
+fi
+
+if [[ -n "${ECHOLOCAL_BUILD_NUMBER:-}" ]]; then
+  if [[ ! "$ECHOLOCAL_BUILD_NUMBER" =~ '^[0-9]+(\.[0-9]+){0,2}$' ]]; then
+    print -u2 "Build failed: ECHOLOCAL_BUILD_NUMBER must contain one to three integers."
+    exit 1
+  fi
+  build_setting_overrides+=(CURRENT_PROJECT_VERSION="$ECHOLOCAL_BUILD_NUMBER")
+fi
+
 xcodebuild \
   -project EchoLocal.xcodeproj \
   -scheme EchoLocal \
   -configuration Release \
   -derivedDataPath .build \
+  clean \
   build \
-  CODE_SIGNING_ALLOWED=NO
+  CODE_SIGNING_ALLOWED=NO \
+  "${build_setting_overrides[@]}"
 
 APP_PATH="$PROJECT_DIR/.build/Build/Products/Release/Echolocal.app"
 APP_FRAMEWORKS="$APP_PATH/Contents/Frameworks"
-PACKAGE_FRAMEWORKS="$PROJECT_DIR/.build/Build/Products/Release/PackageFrameworks"
-KOKORO_SOURCE="$PACKAGE_FRAMEWORKS/KokoroSwift.framework"
-KOKORO_DESTINATION="$APP_FRAMEWORKS/KokoroSwift.framework"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Echolocal"
 
-if [[ ! -x "$KOKORO_SOURCE/Versions/A/KokoroSwift" ]]; then
-  print -u2 "Build failed: KokoroSwift.framework was not produced."
-  exit 1
-fi
-
-# Xcode 27 beta links this dynamic Swift package but intermittently omits its
-# top-level framework from the app's embed phase. Copy it explicitly so the
-# distributable bundle never depends on DerivedData.
-mkdir -p "$APP_FRAMEWORKS"
-ditto "$KOKORO_SOURCE" "$KOKORO_DESTINATION"
+# Kokoro and Misaki are deliberately static. Embedding either framework would
+# load a second copy of MLX and recreate the Objective-C class collisions this
+# packaging topology is designed to prevent.
+for forbidden_framework in KokoroSwift.framework MisakiSwift.framework; do
+  if [[ -e "$APP_FRAMEWORKS/$forbidden_framework" ]]; then
+    print -u2 "Build failed: static package was unexpectedly embedded as $forbidden_framework"
+    exit 1
+  fi
+done
 
 verify_rpath_dependencies() {
   local binary_path=$1
@@ -57,18 +81,31 @@ verify_rpath_dependencies() {
 }
 
 verify_rpath_dependencies "$APP_EXECUTABLE"
-verify_rpath_dependencies "$KOKORO_DESTINATION/Versions/A/KokoroSwift"
 
-# This script creates a portable local-development build with an ad-hoc
-# signature. Hardened runtime library validation requires a real signing team,
-# so do not opt an ad-hoc bundle into it. Xcode/archives still use the project's
-# ENABLE_HARDENED_RUNTIME setting with the developer's configured identity.
-codesign --force --sign - "$APP_FRAMEWORKS/MisakiSwift.framework"
-codesign --force --sign - "$KOKORO_DESTINATION"
-codesign --force --sign - \
-  --entitlements EchoLocal/EchoLocal.entitlements "$APP_PATH"
+sign_code() {
+  local target=$1
+  shift
+  local -a sign_arguments
 
-codesign --verify --deep --strict "$APP_PATH"
+  sign_arguments=(--force --sign "$SIGNING_IDENTITY")
+  if [[ "$SIGNING_IDENTITY" != "-" ]]; then
+    sign_arguments+=(--options runtime --timestamp)
+  fi
+
+  codesign "${sign_arguments[@]}" "$@" "$target"
+}
+
+# Local builds default to an ad-hoc signature. Release automation can provide
+# a Developer ID Application identity through ECHOLOCAL_SIGNING_IDENTITY; that
+# path enables hardened runtime and a secure timestamp for notarization.
+sign_code "$APP_PATH" --entitlements EchoLocal/EchoLocal.entitlements
+
+codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
 print
 print "Built: $APP_PATH"
+if [[ "$SIGNING_IDENTITY" == "-" ]]; then
+  print "Signing: ad-hoc (local/test distribution)"
+else
+  print "Signing: $SIGNING_IDENTITY"
+fi
