@@ -4,6 +4,7 @@ import MLX
 
 final class KokoroSpeechEngine: @unchecked Sendable {
     enum EngineError: LocalizedError {
+        case unsupportedIOSSimulator
         case emptyText
         case missingModel
         case missingVoice
@@ -11,6 +12,8 @@ final class KokoroSpeechEngine: @unchecked Sendable {
 
         var errorDescription: String? {
             switch self {
+            case .unsupportedIOSSimulator:
+                return "Use a physical iPhone to generate speech."
             case .emptyText:
                 return "Paste or type something before generating speech."
             case .missingModel:
@@ -39,6 +42,9 @@ final class KokoroSpeechEngine: @unchecked Sendable {
         voiceURL: URL,
         progress: @escaping (Double) -> Void
     ) async throws -> SpeechSynthesisResult {
+        #if os(iOS) && targetEnvironment(simulator)
+        throw EngineError.unsupportedIOSSimulator
+        #else
         try await withCheckedThrowingContinuation { continuation in
             synthesisQueue.async { [weak self] in
                 guard let self else {
@@ -137,6 +143,7 @@ final class KokoroSpeechEngine: @unchecked Sendable {
                 }
             }
         }
+        #endif
     }
 
     static func processChunksAdaptively(

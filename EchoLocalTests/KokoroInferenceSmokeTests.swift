@@ -3,6 +3,37 @@ import XCTest
 @testable import EchoLocal
 
 final class KokoroInferenceSmokeTests: XCTestCase {
+    #if os(iOS) && targetEnvironment(simulator)
+    func testSynthesisRejectsIOSSimulatorBeforeInitializingMLX() async {
+        do {
+            _ = try await KokoroSpeechEngine().synthesize(
+                text: "This must not reach MLX on the iOS Simulator.",
+                settings: SpeechSettings(
+                    voice: KokoroVoice.voice(withID: "af_heart"),
+                    speed: 1,
+                    paragraphPause: 0.4,
+                    normalizesAudio: false,
+                    trimsSilence: true
+                ),
+                modelURL: URL(fileURLWithPath: "/model-must-not-be-read.safetensors"),
+                voiceURL: URL(fileURLWithPath: "/voice-must-not-be-read.safetensors"),
+                progress: { _ in }
+            )
+            XCTFail("iOS Simulator synthesis should be rejected before MLX initialization.")
+        } catch let error as KokoroSpeechEngine.EngineError {
+            guard case .unsupportedIOSSimulator = error else {
+                return XCTFail("Expected the simulator preflight error, got \(error).")
+            }
+            XCTAssertEqual(
+                error.errorDescription,
+                "Use a physical iPhone to generate speech."
+            )
+        } catch {
+            XCTFail("Expected the simulator preflight error, got \(error).")
+        }
+    }
+    #endif
+
     func testKokoroProducesBoundedLongFormAudioWhenSmokeModelIsAvailable() async throws {
         let fallbackDirectory = URL(
             fileURLWithPath: "/tmp/echo-local-smoke-model",
