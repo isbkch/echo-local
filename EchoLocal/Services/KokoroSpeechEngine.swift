@@ -91,31 +91,36 @@ final class KokoroSpeechEngine: @unchecked Sendable {
                     var combined: [Float] = []
                     combined.reserveCapacity(Int(Double(cleanedText.count) * sampleRate / 14))
 
-                    for (index, chunk) in chunks.enumerated() {
-                        let language: Language = settings.voice.isAmericanEnglish ? .enUS : .enGB
-                        let (rawSamples, _) = try engine!.generateAudio(
-                            voice: voice,
-                            language: language,
-                            text: chunk.text,
-                            speed: settings.speed
-                        )
-
-                        let finishedChunk = AudioProcessor.finish(
-                            rawSamples,
-                            sampleRate: sampleRate,
-                            normalize: false,
-                            trimSilence: settings.trimsSilence
-                        )
-                        combined.append(contentsOf: finishedChunk)
-                        combined.append(
-                            contentsOf: AudioProcessor.silence(
-                                duration: chunk.pauseAfter,
-                                sampleRate: sampleRate
+                    let language: Language = settings.voice.isAmericanEnglish ? .enUS : .enGB
+                    try Self.processChunksAdaptively(
+                        chunks,
+                        process: { chunk in
+                            let (rawSamples, _) = try self.engine!.generateAudio(
+                                voice: voice,
+                                language: language,
+                                text: chunk.text,
+                                speed: settings.speed
                             )
-                        )
 
-                        progress(Double(index + 1) / Double(chunks.count))
-                    }
+                            let finishedChunk = AudioProcessor.finish(
+                                rawSamples,
+                                sampleRate: sampleRate,
+                                normalize: false,
+                                trimSilence: settings.trimsSilence
+                            )
+                            combined.append(contentsOf: finishedChunk)
+                            combined.append(
+                                contentsOf: AudioProcessor.silence(
+                                    duration: chunk.pauseAfter,
+                                    sampleRate: sampleRate
+                                )
+                            )
+                        },
+                        shouldSplit: Self.isTokenLimitError,
+                        progress: { completedFraction in
+                            progress(0.02 + (completedFraction * 0.98))
+                        }
+                    )
 
                     let finished = AudioProcessor.finish(
                         combined,
@@ -131,6 +136,65 @@ final class KokoroSpeechEngine: @unchecked Sendable {
                     continuation.resume(throwing: error)
                 }
             }
+        }
+    }
+
+    static func processChunksAdaptively(
+        _ initialChunks: [SpeechChunk],
+        process: (SpeechChunk) throws -> Void,
+        shouldSplit: (Error) -> Bool,
+        progress: (Double) -> Void
+    ) throws {
+        guard !initialChunks.isEmpty else { return }
+
+        var pendingChunks = initialChunks
+        var nextIndex = 0
+        var completedCharacters = 0
+        var lastReportedProgress = 0.0
+        let totalCharacters = max(1, initialChunks.reduce(0) { $0 + $1.text.count })
+
+        while nextIndex < pendingChunks.count {
+            let chunk = pendingChunks[nextIndex]
+
+            do {
+                try process(chunk)
+            } catch {
+                guard shouldSplit(error) else { throw error }
+
+                let replacements = TextChunker.refinedChunks(for: chunk)
+                guard replacements.count > 1 else { throw error }
+
+                pendingChunks.replaceSubrange(nextIndex...nextIndex, with: replacements)
+                continue
+            }
+
+            completedCharacters += chunk.text.count
+            nextIndex += 1
+
+            let completedFraction = min(
+                1,
+                Double(completedCharacters) / Double(totalCharacters)
+            )
+            let nextProgress = max(lastReportedProgress, completedFraction)
+            if nextProgress > lastReportedProgress {
+                lastReportedProgress = nextProgress
+                progress(nextProgress)
+            }
+        }
+
+        if lastReportedProgress < 1 {
+            progress(1)
+        }
+    }
+
+    private static func isTokenLimitError(_ error: Error) -> Bool {
+        guard let kokoroError = error as? KokoroTTS.KokoroTTSError else { return false }
+
+        switch kokoroError {
+        case .tooManyTokens:
+            return true
+        @unknown default:
+            return false
         }
     }
 }

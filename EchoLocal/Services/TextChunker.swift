@@ -7,6 +7,7 @@ enum TextChunker {
         maximumCharacters: Int = 700,
         paragraphPause: TimeInterval
     ) -> [SpeechChunk] {
+        let boundedMaximumCharacters = max(1, maximumCharacters)
         let paragraphs = source
             .components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -15,7 +16,10 @@ enum TextChunker {
         var output: [SpeechChunk] = []
 
         for paragraph in paragraphs {
-            let pieces = sentencePieces(in: paragraph, maximumCharacters: maximumCharacters)
+            let pieces = sentencePieces(
+                in: paragraph,
+                maximumCharacters: boundedMaximumCharacters
+            )
 
             for (index, piece) in pieces.enumerated() {
                 output.append(
@@ -32,6 +36,23 @@ enum TextChunker {
         }
 
         return output
+    }
+
+    static func refinedChunks(for chunk: SpeechChunk) -> [SpeechChunk] {
+        guard chunk.text.count > 1 else { return [chunk] }
+
+        let pieces = sentencePieces(
+            in: chunk.text,
+            maximumCharacters: max(1, chunk.text.count / 2)
+        )
+        guard pieces.count > 1 else { return [chunk] }
+
+        return pieces.enumerated().map { index, piece in
+            SpeechChunk(
+                text: piece,
+                pauseAfter: index == pieces.count - 1 ? chunk.pauseAfter : 0.12
+            )
+        }
     }
 
     private static func sentencePieces(in paragraph: String, maximumCharacters: Int) -> [String] {
@@ -79,16 +100,17 @@ enum TextChunker {
         var pieces: [String] = []
         var current = ""
 
-        for word in text.split(whereSeparator: \.isWhitespace) {
-            let word = String(word)
-            let candidate = current.isEmpty ? word : "\(current) \(word)"
-            if candidate.count <= maximumCharacters {
-                current = candidate
-            } else {
-                if !current.isEmpty {
-                    pieces.append(current)
+        for oversizedWord in text.split(whereSeparator: \.isWhitespace) {
+            for word in splitWord(String(oversizedWord), maximumCharacters: maximumCharacters) {
+                let candidate = current.isEmpty ? word : "\(current) \(word)"
+                if candidate.count <= maximumCharacters {
+                    current = candidate
+                } else {
+                    if !current.isEmpty {
+                        pieces.append(current)
+                    }
+                    current = word
                 }
-                current = word
             }
         }
 
@@ -98,5 +120,23 @@ enum TextChunker {
 
         return pieces
     }
-}
 
+    private static func splitWord(_ word: String, maximumCharacters: Int) -> [String] {
+        guard word.count > maximumCharacters else { return [word] }
+
+        var pieces: [String] = []
+        var start = word.startIndex
+
+        while start < word.endIndex {
+            let end = word.index(
+                start,
+                offsetBy: maximumCharacters,
+                limitedBy: word.endIndex
+            ) ?? word.endIndex
+            pieces.append(String(word[start..<end]))
+            start = end
+        }
+
+        return pieces
+    }
+}
