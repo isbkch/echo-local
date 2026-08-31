@@ -194,14 +194,15 @@ jobs:
           version=${RELEASE_TAG#v}
           dmg_path="$GITHUB_WORKSPACE/source/dist/Echolocal-$version.dmg"
           checksum_path="$dmg_path.sha256"
-          upload_options=()
+          upload_command=(
+            gh release upload "$RELEASE_TAG"
+            --repo "$GITHUB_REPOSITORY"
+            "${dmg_path}#Echolocal $version for macOS"
+            "${checksum_path}#SHA-256 checksum"
+          )
 
           if [[ "$REPLACE_EXISTING" == "true" ]]; then
-            upload_options+=(--clobber)
+            upload_command+=(--clobber)
           fi
 
-          gh release upload "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            "${dmg_path}#Echolocal $version for macOS" \
-            "${checksum_path}#SHA-256 checksum" \
-            "${upload_options[@]}"
+          "${upload_command[@]}"
