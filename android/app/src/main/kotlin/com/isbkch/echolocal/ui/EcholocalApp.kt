@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.isbkch.echolocal.app.EcholocalUiState
 import com.isbkch.echolocal.model.ModelInstallState
+import com.isbkch.echolocal.ui.licenses.OpenSourceLicensesScreen
 
 data class EcholocalActions(
     val onTextChanged: (String) -> Unit = {},
@@ -37,22 +38,34 @@ fun EcholocalApp(
     layoutModeOverride: EcholocalLayoutMode? = null,
 ) {
     var showsVoiceDirection by rememberSaveable { mutableStateOf(false) }
+    var showsLicenses by rememberSaveable { mutableStateOf(false) }
     val layoutMode = layoutModeOverride ?: LocalEcholocalLayoutMode.current
+    val screenActions = actions.copy(
+        onOpenLicenses = {
+            showsVoiceDirection = false
+            showsLicenses = true
+        },
+    )
+
+    if (showsLicenses) {
+        OpenSourceLicensesScreen(onBack = { showsLicenses = false })
+        return
+    }
 
     when (layoutMode) {
         EcholocalLayoutMode.Compact -> CompactEcholocalScreen(
             state = state,
-            actions = actions,
+            actions = screenActions,
             onVoiceDirection = { showsVoiceDirection = true },
         )
-        EcholocalLayoutMode.Expanded -> ExpandedEcholocalScreen(state, actions)
+        EcholocalLayoutMode.Expanded -> ExpandedEcholocalScreen(state, screenActions)
     }
 
     if (showsVoiceDirection && layoutMode == EcholocalLayoutMode.Compact) {
         ModalBottomSheet(onDismissRequest = { showsVoiceDirection = false }) {
             VoiceDirection(
                 state = state,
-                actions = actions,
+                actions = screenActions,
                 onDone = { showsVoiceDirection = false },
             )
         }

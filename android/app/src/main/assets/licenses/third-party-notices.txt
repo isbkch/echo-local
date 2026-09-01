@@ -1,0 +1,55 @@
+Echolocal Android third-party notices
+
+Echolocal is not affiliated with or endorsed by Soniqo, Google, Microsoft, or the other projects listed below. Product and project names are used only to identify the software included in or downloaded by the app.
+
+Soniqo speech-android 0.0.19
+Copyright 2026 Soniqo
+Purpose: published Android SDK and JNI bridge used for on-device speech synthesis.
+Source: https://github.com/soniqo/speech-android/tree/v0.0.19
+License: Apache-2.0. Complete text: apache-2.0.txt.
+
+Soniqo speech-core
+Copyright 2026 Soniqo and contributors
+Revision bundled by speech-android 0.0.19: e5e4adcc908234c02e01d06cb17d82dfa56a55f7
+Purpose: native Kokoro pipeline and model runtime.
+Source: https://github.com/soniqo/speech-core/tree/e5e4adcc908234c02e01d06cb17d82dfa56a55f7
+License: Apache-2.0. Complete text: apache-2.0.txt.
+Native third-party details and complete applicable license texts: litert-third-party-notices.txt.
+
+Kokoro 82M ONNX model and selected voice embeddings
+Model repository: Soniqo Kokoro-82M-ONNX
+Pinned revision: 2895b2025f1046fad6b51f8773debc3da8ba05df
+Source: https://huggingface.co/soniqo/Kokoro-82M-ONNX/tree/2895b2025f1046fad6b51f8773debc3da8ba05df
+Based on: https://huggingface.co/hexgrad/Kokoro-82M
+Purpose: Kokoro model graph, weights, pronunciation dictionaries, and five voice embeddings downloaded only after the user requests local-model setup.
+License: Apache-2.0 as declared by the pinned model repository. Complete text: apache-2.0.txt.
+
+ONNX Runtime 1.27.0
+Copyright (c) Microsoft Corporation
+Source: https://github.com/microsoft/onnxruntime/tree/v1.27.0
+Purpose: native ONNX inference runtime bundled in the Soniqo AAR.
+License: MIT. Complete text: onnxruntime-mit.txt.
+
+LiteRT 2.1.5 and incorporated components
+Copyright Google LLC and the respective component contributors
+Source: https://github.com/google-ai-edge/LiteRT/tree/v2.1.5
+Purpose: native runtime library bundled in the Soniqo AAR.
+License: Apache-2.0 for LiteRT, with permissively licensed incorporated components.
+Complete details and license texts: litert-third-party-notices.txt and apache-2.0.txt.
+
+Kotlin standard library 2.2.21 and kotlinx.coroutines 1.9.0
+Copyright JetBrains s.r.o. and Kotlin contributors
+Sources: https://github.com/JetBrains/kotlin and https://github.com/Kotlin/kotlinx.coroutines
+Licenses: Apache-2.0. Complete text: apache-2.0.txt.
+
+AndroidX Core, Activity, Lifecycle, DataStore, WorkManager, Media3, Compose, and Material 3
+Copyright The Android Open Source Project
+Source: https://android.googlesource.com/platform/frameworks/support/
+Licenses: Apache-2.0. Complete text: apache-2.0.txt.
+
+OkHttp 4.12.0 and Okio
+Copyright 2019 Square, Inc. and contributors
+Sources: https://github.com/square/okhttp and https://github.com/square/okio
+Licenses: Apache-2.0. Complete text: apache-2.0.txt.
+
+Gradle 8.13 and Android Gradle Plugin 8.13.2 are build tools and are not bundled as executable runtime components in the APK. Their source and license information is available from https://github.com/gradle/gradle and https://android.googlesource.com/platform/tools/base/.

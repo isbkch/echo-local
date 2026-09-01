@@ -22,6 +22,7 @@ Echolocal runs [KokoroSwift](https://github.com/mlalma/kokoro-ios) on Apple sili
 
 - Apple-silicon Mac
 - macOS 15 or later
+- Android 8.0 or later for the Android proof APK
 
 ## Install
 
@@ -83,6 +84,33 @@ xcodebuild \
 ```
 
 Before calling an iPhone release ready, install it on a physical device, complete the one-time model download, enable Airplane Mode, force-quit and relaunch, then generate, play, scrub, and share a WAV. Record cold and warm generation time plus peak memory for the oldest supported device. A simulator pass does not prove MLX inference or iOS memory stability.
+
+## Android proof APK
+
+The standalone Android app lives under `android/` and targets Android 8.0 (API 26) or later. It uses the published Soniqo speech SDK for local Kokoro generation, with five curated English voices and the same editor, paragraph spacing, finishing, waveform, playback, scrub, and WAV-sharing workflow as Echolocal on Apple platforms. Pace remains deliberately deferred for this proof milestone.
+
+Build the debug-signed APK and its SHA-256 checksum with:
+
+```sh
+./scripts/build-android.sh
+```
+
+Install it on one explicitly selected device:
+
+```sh
+adb devices -l
+adb -s DEVICE_SERIAL install -r android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Replace `DEVICE_SERIAL` with the exact value shown by `adb devices -l`. Never omit `-s` when more than one phone may be connected. This artifact uses the standard Android debug key and is intended for local proof testing, not Google Play distribution.
+
+At first launch, choose **Download local model** to fetch and verify 163.3 MiB of pinned Kokoro assets in app-private storage. After setup, force-quit Echolocal, enable Airplane Mode, relaunch, and verify generation, playback, scrubbing, regeneration, and WAV sharing. Build success or an emulator launch proves the shell only; final acceptance requires successful inference and memory measurement on the named physical devices.
+
+To sample process memory during a device run:
+
+```sh
+./scripts/profile-android-memory.sh DEVICE_SERIAL /tmp/echolocal-memory.tsv
+```
 
 ## Install the optional local model
 
