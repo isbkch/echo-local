@@ -34,17 +34,21 @@ data class EcholocalActions(
 fun EcholocalApp(
     state: EcholocalUiState,
     actions: EcholocalActions,
-    expanded: Boolean,
+    layoutModeOverride: EcholocalLayoutMode? = null,
 ) {
     var showsVoiceDirection by rememberSaveable { mutableStateOf(false) }
+    val layoutMode = layoutModeOverride ?: LocalEcholocalLayoutMode.current
 
-    CompactEcholocalScreen(
-        state = state,
-        actions = actions,
-        onVoiceDirection = { showsVoiceDirection = true },
-    )
+    when (layoutMode) {
+        EcholocalLayoutMode.Compact -> CompactEcholocalScreen(
+            state = state,
+            actions = actions,
+            onVoiceDirection = { showsVoiceDirection = true },
+        )
+        EcholocalLayoutMode.Expanded -> ExpandedEcholocalScreen(state, actions)
+    }
 
-    if (showsVoiceDirection) {
+    if (showsVoiceDirection && layoutMode == EcholocalLayoutMode.Compact) {
         ModalBottomSheet(onDismissRequest = { showsVoiceDirection = false }) {
             VoiceDirection(
                 state = state,

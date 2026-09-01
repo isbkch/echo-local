@@ -34,16 +34,23 @@ import com.isbkch.echolocal.ui.theme.EcholocalSuccess
 import com.isbkch.echolocal.ui.theme.LocalEcholocalColors
 
 @Composable
-fun VoiceDirection(state: EcholocalUiState, actions: EcholocalActions, onDone: (() -> Unit)? = null) {
+fun VoiceDirection(
+    state: EcholocalUiState,
+    actions: EcholocalActions,
+    onDone: (() -> Unit)? = null,
+    showHeader: Boolean = true,
+) {
     val colors = LocalEcholocalColors.current
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).background(colors.canvas)) {
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Voice direction", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.weight(1f))
-            if (onDone != null) TextButton(onClick = onDone) { Text("Done") }
+        if (showHeader) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Voice direction", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.weight(1f))
+                if (onDone != null) TextButton(onClick = onDone) { Text("Done") }
+            }
         }
         SectionLabel("VOICE")
         Column(Modifier.background(colors.paper)) {
@@ -102,6 +109,11 @@ fun VoiceDirection(state: EcholocalUiState, actions: EcholocalActions, onDone: (
             Text("Open-source licenses")
         }
     }
+}
+
+@Composable
+fun VoiceDirectionContent(state: EcholocalUiState, actions: EcholocalActions) {
+    VoiceDirection(state = state, actions = actions, showHeader = false)
 }
 
 @Composable

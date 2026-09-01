@@ -41,6 +41,7 @@ fun CompactEcholocalScreen(
     state: EcholocalUiState,
     actions: EcholocalActions,
     onVoiceDirection: () -> Unit,
+    showDirectionButton: Boolean = true,
 ) {
     val colors = LocalEcholocalColors.current
     val clipboard = LocalClipboardManager.current
@@ -65,10 +66,12 @@ fun CompactEcholocalScreen(
             ) {
                 EcholocalWordmark()
                 Spacer(Modifier.weight(1f))
-                TextButton(
-                    onClick = onVoiceDirection,
-                    modifier = Modifier.semantics { contentDescription = "Voice direction" },
-                ) { Text("Direction", color = EcholocalAccent, fontWeight = FontWeight.SemiBold) }
+                if (showDirectionButton) {
+                    TextButton(
+                        onClick = onVoiceDirection,
+                        modifier = Modifier.semantics { contentDescription = "Voice direction" },
+                    ) { Text("Direction", color = EcholocalAccent, fontWeight = FontWeight.SemiBold) }
+                }
             }
             HorizontalDivider(thickness = 0.5.dp, color = colors.line)
             Row(

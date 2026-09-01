@@ -33,7 +33,7 @@ class CompactEcholocalScreenTest {
                 EcholocalApp(
                     state = EcholocalUiState(modelState = ModelInstallState.Missing),
                     actions = EcholocalActions(),
-                    expanded = false,
+                    layoutModeOverride = EcholocalLayoutMode.Compact,
                 )
             }
         }
@@ -49,7 +49,7 @@ class CompactEcholocalScreenTest {
                 EcholocalApp(
                     state = readyState(text = "A page worth hearing."),
                     actions = EcholocalActions(),
-                    expanded = false,
+                    layoutModeOverride = EcholocalLayoutMode.Compact,
                 )
             }
         }
@@ -68,7 +68,7 @@ class CompactEcholocalScreenTest {
                 EcholocalApp(
                     state = readyState(),
                     actions = EcholocalActions(onSelectVoice = { selectedVoice = it }),
-                    expanded = false,
+                    layoutModeOverride = EcholocalLayoutMode.Compact,
                 )
             }
         }
