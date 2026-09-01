@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
+    implementation(libs.soniqo.speech)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.test.core.ktx)
