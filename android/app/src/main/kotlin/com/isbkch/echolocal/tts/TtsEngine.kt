@@ -10,3 +10,13 @@ interface TtsEngine : AutoCloseable {
 fun interface TtsEngineFactory {
     fun create(modelDirectory: File): TtsEngine
 }
+
+interface SpeechGenerating {
+    suspend fun generate(
+        request: GenerationRequest,
+        modelDirectory: File,
+        onProgress: (Double) -> Unit = {},
+    ): GenerationResult
+
+    fun cancel()
+}

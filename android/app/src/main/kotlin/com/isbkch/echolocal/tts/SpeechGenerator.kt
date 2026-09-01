@@ -41,17 +41,17 @@ class SpeechGenerator(
         )
     },
     private val nanoTime: () -> Long = System::nanoTime,
-) {
+) : SpeechGenerating {
     private data class CachedEngine(val modelDirectory: File, val engine: TtsEngine)
 
     private val generationMutex = Mutex()
     private val engineGuard = Any()
     @Volatile private var cachedEngine: CachedEngine? = null
 
-    suspend fun generate(
+    override suspend fun generate(
         request: GenerationRequest,
         modelDirectory: File,
-        onProgress: (Double) -> Unit = {},
+        onProgress: (Double) -> Unit,
     ): GenerationResult = generationMutex.withLock {
         val segments = ParagraphPlanner.segments(request.text, request.settings.paragraphPauseSeconds)
         require(segments.isNotEmpty()) { "Enter text before generating speech." }
@@ -120,7 +120,7 @@ class SpeechGenerator(
         }
     }
 
-    fun cancel() {
+    override fun cancel() {
         synchronized(engineGuard) { cachedEngine?.engine }?.cancel()
     }
 

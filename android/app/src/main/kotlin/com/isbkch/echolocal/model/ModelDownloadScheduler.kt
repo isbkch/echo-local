@@ -2,6 +2,7 @@ package com.isbkch.echolocal.model
 
 import android.content.Context
 import androidx.lifecycle.Observer
+import androidx.core.content.ContextCompat
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -19,14 +20,15 @@ interface ModelDownloadScheduler {
 
 class WorkManagerModelDownloadScheduler(context: Context) : ModelDownloadScheduler {
     private val workManager = WorkManager.getInstance(context)
+    private val mainExecutor = ContextCompat.getMainExecutor(context)
 
     override val snapshots: Flow<ModelDownloadSnapshot> = callbackFlow {
         val liveData = workManager.getWorkInfosForUniqueWorkLiveData(WORK_NAME)
         val observer = Observer<List<WorkInfo>> { infos ->
             infos.maxByOrNull { it.runAttemptCount }?.let { trySend(it.toSnapshot()) }
         }
-        liveData.observeForever(observer)
-        awaitClose { liveData.removeObserver(observer) }
+        mainExecutor.execute { liveData.observeForever(observer) }
+        awaitClose { mainExecutor.execute { liveData.removeObserver(observer) } }
     }
 
     override fun enqueue() {
