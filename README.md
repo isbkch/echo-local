@@ -139,6 +139,8 @@ Network access is used only when you explicitly download the model. After it is 
 
 ## Test
 
+The cross-platform boundary map, risk ranking, automated coverage, and physical acceptance gates live in [`docs/END_TO_END_USER_JOURNEYS.md`](docs/END_TO_END_USER_JOURNEYS.md).
+
 ```sh
 xcodegen generate
 TEST_DERIVED_DATA=$(mktemp -d /tmp/echolocal-tests.XXXXXX)
@@ -151,7 +153,14 @@ xcodebuild \
   CODE_SIGNING_ALLOWED=NO
 ```
 
-The suite covers text chunking, audio finishing, waveform reduction, and WAV encoding. The optional inference smoke test runs when `kokoro-v1_0.safetensors` and `af_heart.safetensors` exist in `/tmp/echo-local-smoke-model`, or in the directory named by `LOCAL_AUDIO_SMOKE_MODEL_DIR`.
+The Apple suite covers pinned model integrity and import safety, text chunking, audio finishing, waveform reduction, and WAV encoding. The optional inference smoke test runs when `kokoro-v1_0.safetensors` and `af_heart.safetensors` exist in `/tmp/echo-local-smoke-model`, or in the directory named by `LOCAL_AUDIO_SMOKE_MODEL_DIR`.
+
+Run Android's deterministic journey tests and assemble the proof APK with:
+
+```sh
+cd android
+./gradlew :app:testDebugUnitTest :app:assembleDebug
+```
 
 ## Maintainer release flow
 

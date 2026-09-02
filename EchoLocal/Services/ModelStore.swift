@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 #if os(macOS)
 import AppKit
@@ -8,10 +9,11 @@ final class ModelStore: ObservableObject {
     struct RemoteAsset: Hashable {
         let fileName: String
         let expectedBytes: Int64
+        let sha256: String
 
         var sourceURL: URL {
             URL(
-                string: "https://huggingface.co/brannala64/kokoro-82m-safetensors/resolve/main/\(fileName)"
+                string: "https://huggingface.co/brannala64/kokoro-82m-safetensors/resolve/\(ModelStore.sourceRevision)/\(fileName)"
             )!
         }
     }
@@ -24,23 +26,55 @@ final class ModelStore: ObservableObject {
         case failed(String)
     }
 
+    static let sourceRevision = "fb1f073314bb48cda1f1e371d0d97653cbaf9680"
+
     static let modelAsset = RemoteAsset(
         fileName: "kokoro-v1_0.safetensors",
-        expectedBytes: 327_115_152
+        expectedBytes: 327_115_152,
+        sha256: "4e9ecdf03b8b6cf906070390237feda473dc13327cb8d56a43deaa374c02acd8"
     )
 
-    static let voiceAssets = KokoroVoice.curated.map {
-        RemoteAsset(fileName: $0.fileName, expectedBytes: 522_339)
-    }
+    static let voiceAssets = [
+        RemoteAsset(
+            fileName: "af_heart.safetensors",
+            expectedBytes: 522_339,
+            sha256: "4e40b08984cd84a86b4d07960939bd85bb6b3747dd747b7de48dca3aaeab37ca"
+        ),
+        RemoteAsset(
+            fileName: "af_bella.safetensors",
+            expectedBytes: 522_339,
+            sha256: "a18024b9332f5ff217c7f604cbe94449a3ca51c3b8d85500e31cd3cbdc4ef6ce"
+        ),
+        RemoteAsset(
+            fileName: "am_michael.safetensors",
+            expectedBytes: 522_339,
+            sha256: "19a8661430456e2bbf0a68b52fa9b49678bb0fb7418619f868df77921f5aa43c"
+        ),
+        RemoteAsset(
+            fileName: "bf_emma.safetensors",
+            expectedBytes: 522_339,
+            sha256: "ed92055e1ed96f2a0b4a52b76956dcfd76627bd548c33801743a62c0817dec01"
+        ),
+        RemoteAsset(
+            fileName: "bm_george.safetensors",
+            expectedBytes: 522_339,
+            sha256: "a3a6682cde622e7aee35597b91947fa018f78be101a97587a100effe227e5a21"
+        ),
+    ]
 
     static let allAssets = [modelAsset] + voiceAssets
 
     @Published private(set) var state: State = .checking
 
     private var downloadTask: Task<Void, Never>?
+    private let assets: [RemoteAsset]
+    private let storageDirectoryOverride: URL?
 
     var storageDirectory: URL {
-        applicationSupportDirectory
+        if let storageDirectoryOverride {
+            return storageDirectoryOverride
+        }
+        return applicationSupportDirectory
             .appendingPathComponent("Echolocal", isDirectory: true)
             .appendingPathComponent("Kokoro", isDirectory: true)
     }
@@ -61,15 +95,19 @@ final class ModelStore: ObservableObject {
     }
 
     var totalDownloadSize: Int64 {
-        Self.allAssets.reduce(0) { $0 + $1.expectedBytes }
+        assets.reduce(0) { $0 + $1.expectedBytes }
     }
 
     var isReady: Bool {
         state == .ready
     }
 
-    init() {
-        migrateLegacyModelIfNeeded()
+    init(storageDirectory: URL? = nil, assets: [RemoteAsset]? = nil) {
+        storageDirectoryOverride = storageDirectory
+        self.assets = assets ?? Self.allAssets
+        if storageDirectory == nil {
+            migrateLegacyModelIfNeeded()
+        }
         refresh()
     }
 
@@ -78,7 +116,7 @@ final class ModelStore: ObservableObject {
     }
 
     func refresh() {
-        state = Self.allAssets.allSatisfy(isAssetValid) ? .ready : .missing
+        state = assets.allSatisfy(isAssetValid) ? .ready : .missing
     }
 
     private func migrateLegacyModelIfNeeded() {
@@ -111,11 +149,11 @@ final class ModelStore: ObservableObject {
             do {
                 try prepareStorageDirectory()
 
-                var completedBytes = Self.allAssets
+                var completedBytes = assets
                     .filter(isAssetValid)
                     .reduce(Int64.zero) { $0 + $1.expectedBytes }
 
-                for asset in Self.allAssets where !isAssetValid(asset) {
+                for asset in assets where !isAssetValid(asset) {
                     let baseBytes = completedBytes
                     let downloader = AssetDownloader { [weak self] writtenBytes in
                         Task { @MainActor in
@@ -134,6 +172,7 @@ final class ModelStore: ObservableObject {
                     )
 
                     let temporaryURL = try await downloader.download(from: asset.sourceURL)
+                    defer { try? FileManager.default.removeItem(at: temporaryURL) }
                     try validate(fileAt: temporaryURL, as: asset)
                     try install(fileAt: temporaryURL, as: asset)
                     completedBytes += asset.expectedBytes
@@ -154,7 +193,7 @@ final class ModelStore: ObservableObject {
             }
         }
 
-        for asset in Self.allAssets {
+        for asset in assets {
             let source = sourceDirectory.appendingPathComponent(asset.fileName)
             guard FileManager.default.fileExists(atPath: source.path) else {
                 throw StoreError.missingFile(asset.fileName)
@@ -164,7 +203,7 @@ final class ModelStore: ObservableObject {
 
         try prepareStorageDirectory()
 
-        for asset in Self.allAssets {
+        for asset in assets {
             try install(
                 fileAt: sourceDirectory.appendingPathComponent(asset.fileName),
                 as: asset,
@@ -216,14 +255,29 @@ final class ModelStore: ObservableObject {
         else {
             return false
         }
-        return Int64(size) == asset.expectedBytes
+        guard Int64(size) == asset.expectedBytes else { return false }
+        return (try? sha256(fileAt: url)) == asset.sha256
     }
 
     private func validate(fileAt url: URL, as asset: RemoteAsset) throws {
         let values = try url.resourceValues(forKeys: [.fileSizeKey])
-        guard Int64(values.fileSize ?? 0) == asset.expectedBytes else {
+        guard
+            Int64(values.fileSize ?? 0) == asset.expectedBytes,
+            try sha256(fileAt: url) == asset.sha256
+        else {
             throw StoreError.invalidFile(asset.fileName)
         }
+    }
+
+    private func sha256(fileAt url: URL) throws -> String {
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+
+        var hasher = SHA256()
+        while let data = try handle.read(upToCount: 1024 * 1024), !data.isEmpty {
+            hasher.update(data: data)
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
     private func install(

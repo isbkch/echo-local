@@ -36,6 +36,30 @@ class SpeechGeneratorTest {
     }
 
     @Test
+    fun longSingleParagraphReachesTheEngineInBoundedOrder() = runTest {
+        withDirectories { modelDirectory, cacheDirectory ->
+            val source = List(220) { "carefully" }.joinToString(" ")
+            val engine = FakeTtsEngine(shortArrayOf(1_000), sampleRate = 24_000)
+            val generator = SpeechGenerator(TtsEngineFactory { engine }, GeneratedAudioStore(cacheDirectory))
+
+            generator.generate(
+                GenerationRequest(
+                    source,
+                    SpeechSettings(normalizesAudio = false, trimsSilence = false),
+                ),
+                modelDirectory,
+            ) { }
+
+            assertTrue(engine.requests.size > 1)
+            assertTrue(engine.requests.all { it.text.length <= 700 })
+            assertEquals(
+                source.split(Regex("\\s+")),
+                engine.requests.flatMap { it.text.split(Regex("\\s+")) },
+            )
+        }
+    }
+
+    @Test
     fun blankTextDoesNotCreateTheNativeEngine() = runTest {
         withDirectories { modelDirectory, cacheDirectory ->
             var creations = 0
