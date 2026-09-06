@@ -1,6 +1,7 @@
 .DS_Store
 .build/
 dist/
+artifacts/android/
 DerivedData/
 xcuserdata/
 *.xcuserdatad/
@@ -25,6 +26,8 @@ xcuserdata/
 *.cer
 *.mobileprovision
 *.keychain-db
+*.jks
+*.keystore
 
 AGENTS.md
 .superpowers

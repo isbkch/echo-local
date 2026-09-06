@@ -89,20 +89,41 @@ Before calling an iPhone release ready, install it on a physical device, complet
 
 The standalone Android app lives under `android/` and targets Android 8.0 (API 26) or later. It uses the published Soniqo speech SDK for local Kokoro generation, with five curated English voices and the same editor, paragraph spacing, finishing, waveform, playback, scrub, and WAV-sharing workflow as Echolocal on Apple platforms. Pace remains deliberately deferred for this proof milestone.
 
-Build the debug-signed APK and its SHA-256 checksum with:
+Build with JDK 21 and Android SDK 36 installed:
 
 ```sh
-./scripts/build-android.sh
+./build-android-native.sh
 ```
 
-Install it on one explicitly selected device:
+The helper runs Debug lint and unit tests, builds the debug-signed APK, verifies its ZIP integrity and signature, and copies it with a SHA-256 file to `artifacts/android/echolocal-development-0.1.0-1.apk`. The original APK and checksum remain under `android/app/build/outputs/apk/debug/`. The existing `./scripts/build-android.sh` command forwards to this helper and accepts the same options.
+
+Install a build on one explicitly selected device:
 
 ```sh
 adb devices -l
-adb -s DEVICE_SERIAL install -r android/app/build/outputs/apk/debug/app-debug.apk
+./build-android-native.sh internal --install --device DEVICE_SERIAL
 ```
 
-Replace `DEVICE_SERIAL` with the exact value shown by `adb devices -l`. Never omit `-s` when more than one phone may be connected. This artifact uses the standard Android debug key and is intended for local proof testing, not Google Play distribution.
+Replace `DEVICE_SERIAL` with the exact value shown by `adb devices -l`, or set `ANDROID_SERIAL`. Without a selection, `--install` requires exactly one authorized device. Development and internal builds share the same local app configuration and debug key; internal mode labels the artifact for device testing.
+
+To build a signed release bundle, configure these values in your user `~/.gradle/gradle.properties` file (or under `GRADLE_USER_HOME`):
+
+```properties
+ECHOLOCAL_ANDROID_KEYSTORE_PATH=/absolute/path/to/echolocal-upload.jks
+ECHOLOCAL_ANDROID_KEYSTORE_PASSWORD=...
+ECHOLOCAL_ANDROID_KEY_ALIAS=echolocal-upload
+ECHOLOCAL_ANDROID_KEY_PASSWORD=...
+```
+
+Environment variables with those names take precedence. Keep signing material outside the repository. Use your [Android upload key](https://developer.android.com/studio/publish/app-signing) for release bundles:
+
+```sh
+./build-android-native.sh playstore --version-code 2
+```
+
+Playstore mode requires all signing values, runs Release lint and Debug unit tests, builds and verifies the signed AAB, and copies it with a checksum to `artifacts/android/`. It preserves the app's existing unminified release configuration. This command does not upload to Google Play. Choose an unused, higher version code for each update; `--version-code` applies only to that build, and omitting it uses the value in `android/app/build.gradle.kts`.
+
+Use `--clean` for a clean build or `--skip-tests` to skip lint and unit tests. Run `./build-android-native.sh --help` for SDK discovery and all options.
 
 At first launch, choose **Download local model** to fetch and verify 163.3 MiB of pinned Kokoro assets in app-private storage. After setup, force-quit Echolocal, enable Airplane Mode, relaunch, and verify generation, playback, scrubbing, regeneration, and WAV sharing. Build success or an emulator launch proves the shell only; final acceptance requires successful inference and memory measurement on the named physical devices.
 
