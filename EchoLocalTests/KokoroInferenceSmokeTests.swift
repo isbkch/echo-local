@@ -1,8 +1,115 @@
 import Foundation
+import MLX
 import XCTest
 @testable import EchoLocal
 
 final class KokoroInferenceSmokeTests: XCTestCase {
+    #if !os(iOS) || !targetEnvironment(simulator)
+    func testSynthesisReleasesModelAndCacheBeforeReturningAndCanGenerateAgain() async throws {
+        let assets = try smokeAssets()
+        let engine = KokoroSpeechEngine()
+        Stream.gpu.synchronize()
+        Memory.clearCache()
+        let baseline = Memory.snapshot()
+
+        for generation in 1...2 {
+            var memoryDuringGeneration = baseline
+            let result = try await engine.synthesize(
+                text: "Hello, this is Echolocal.\n\nThe model can rest once the speech is ready.",
+                settings: smokeSettings,
+                modelURL: assets.model,
+                voiceURL: assets.voice,
+                progress: { progress in
+                    if progress == 1 {
+                        memoryDuringGeneration = Memory.snapshot()
+                    }
+                }
+            )
+            let after = Memory.snapshot()
+            print("Generation \(generation) MLX memory during: \(memoryDuringGeneration), after: \(after)")
+
+            XCTAssertLessThanOrEqual(
+                after.activeMemory,
+                baseline.activeMemory + 1024 * 1024,
+                "A completed generation must release its model and voice even while the engine stays alive."
+            )
+            XCTAssertEqual(after.cacheMemory, 0, "Return reusable Metal buffers before reporting completion.")
+            XCTAssertEqual(result.sampleRate, 24_000)
+            XCTAssertGreaterThan(result.duration, 1)
+            XCTAssertGreaterThan(result.samples.map(abs).max() ?? 0, 0.05)
+        }
+        withExtendedLifetime(engine) {}
+    }
+
+    func testSynthesisReleasesModelAndCacheAfterVoiceLoadingFails() async throws {
+        let assets = try smokeAssets()
+        let invalidVoice = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(UUID().uuidString).safetensors")
+        defer { try? FileManager.default.removeItem(at: invalidVoice) }
+        try MLX.save(arrays: ["missing_voice_key": MLXArray([Float(0)])], url: invalidVoice)
+
+        let engine = KokoroSpeechEngine()
+        Stream.gpu.synchronize()
+        Memory.clearCache()
+        let baseline = Memory.snapshot()
+        let previousAudio = try await engine.synthesize(
+            text: "Keep this audio available if the next generation fails.",
+            settings: smokeSettings,
+            modelURL: assets.model,
+            voiceURL: assets.voice,
+            progress: { _ in }
+        )
+        var failedSettings = smokeSettings
+        failedSettings.voice = KokoroVoice.voice(withID: "bf_emma")
+        do {
+            _ = try await engine.synthesize(
+                text: "This voice file is missing its embedding.",
+                settings: failedSettings,
+                modelURL: assets.model,
+                voiceURL: invalidVoice,
+                progress: { _ in }
+            )
+            XCTFail("A voice file without its embedding must fail after loading the model.")
+        } catch let error as KokoroSpeechEngine.EngineError {
+            guard case .unavailableVoiceData = error else {
+                return XCTFail("Expected unavailable voice data, got \(error).")
+            }
+        }
+        let after = Memory.snapshot()
+        print("Failed generation MLX memory after: \(after)")
+        XCTAssertLessThanOrEqual(after.activeMemory, baseline.activeMemory + 1024 * 1024)
+        XCTAssertEqual(after.cacheMemory, 0, "Failed generations must also return cached Metal buffers.")
+        XCTAssertGreaterThan(previousAudio.duration, 1)
+        XCTAssertGreaterThan(previousAudio.samples.map(abs).max() ?? 0, 0.05)
+        withExtendedLifetime(engine) {}
+    }
+
+    private var smokeSettings: SpeechSettings {
+        SpeechSettings(
+            voice: KokoroVoice.voice(withID: "af_heart"),
+            speed: 1,
+            paragraphPause: 0.4,
+            normalizesAudio: false,
+            trimsSilence: true
+        )
+    }
+
+    private func smokeAssets() throws -> (model: URL, voice: URL) {
+        let directory = ProcessInfo.processInfo.environment["LOCAL_AUDIO_SMOKE_MODEL_DIR"]
+            .map { URL(fileURLWithPath: $0, isDirectory: true) }
+            ?? URL(fileURLWithPath: "/tmp/echo-local-smoke-model", isDirectory: true)
+        let model = directory.appendingPathComponent("kokoro-v1_0.safetensors")
+        let voice = directory.appendingPathComponent("af_heart.safetensors")
+        guard
+            FileManager.default.fileExists(atPath: model.path),
+            FileManager.default.fileExists(atPath: voice.path)
+        else {
+            throw XCTSkip("Place Kokoro weights and af_heart in \(directory.path) to test memory release.")
+        }
+        return (model, voice)
+    }
+    #endif
+
     #if os(iOS) && targetEnvironment(simulator)
     func testSynthesisRejectsIOSSimulatorBeforeInitializingMLX() async {
         do {

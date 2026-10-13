@@ -84,6 +84,8 @@ Executable coverage: Apple `TextChunkerTests`; Android `DomainBehaviorTest`, `Da
 4. Silence trimming runs per chunk, paragraph pauses are inserted, and normalization runs once over the joined buffer.
 5. A waveform and playable audio are published only after finishing succeeds.
 
+Apple keeps the model and voice loaded through all chunks, then releases them and clears MLX's reusable buffers before reporting success or failure. Generated audio remains available for playback and export; the next generation reloads the installed model. `KokoroInferenceSmokeTests/testSynthesisReleasesModelAndCacheBeforeReturningAndCanGenerateAgain` and `testSynthesisReleasesModelAndCacheAfterVoiceLoadingFails` verify this lifecycle with real model files on supported hardware.
+
 Executable coverage:
 
 - Apple: `TextChunkerTests`, `AudioProcessorTests`, and the optional `KokoroInferenceSmokeTests` with local model files.

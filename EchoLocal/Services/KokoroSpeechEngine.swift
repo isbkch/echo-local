@@ -31,10 +31,6 @@ final class KokoroSpeechEngine: @unchecked Sendable {
         qos: .userInitiated
     )
 
-    private var engine: KokoroTTS?
-    private var loadedModelURL: URL?
-    private var voiceCache: [String: MLXArray] = [:]
-
     func synthesize(
         text: String,
         settings: SpeechSettings,
@@ -46,101 +42,89 @@ final class KokoroSpeechEngine: @unchecked Sendable {
         throw EngineError.unsupportedIOSSimulator
         #else
         try await withCheckedThrowingContinuation { continuation in
-            synthesisQueue.async { [weak self] in
-                guard let self else {
-                    continuation.resume(throwing: CancellationError())
-                    return
-                }
+            synthesisQueue.async {
+                let result = Result {
+                    try autoreleasepool {
+                        let cleanedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !cleanedText.isEmpty else {
+                            throw EngineError.emptyText
+                        }
+                        guard FileManager.default.fileExists(atPath: modelURL.path) else {
+                            throw EngineError.missingModel
+                        }
+                        guard FileManager.default.fileExists(atPath: voiceURL.path) else {
+                            throw EngineError.missingVoice
+                        }
 
-                do {
-                    let cleanedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !cleanedText.isEmpty else {
-                        throw EngineError.emptyText
-                    }
-                    guard FileManager.default.fileExists(atPath: modelURL.path) else {
-                        throw EngineError.missingModel
-                    }
-                    guard FileManager.default.fileExists(atPath: voiceURL.path) else {
-                        throw EngineError.missingVoice
-                    }
+                        progress(0.02)
 
-                    progress(0.02)
-
-                    if engine == nil || loadedModelURL != modelURL {
-                        engine = KokoroTTS(modelPath: modelURL)
-                        loadedModelURL = modelURL
-                        voiceCache.removeAll()
-                    }
-
-                    let voice: MLXArray
-                    if let cached = voiceCache[settings.voice.id] {
-                        voice = cached
-                    } else {
+                        // Keep the model and voice alive only for this complete generation.
+                        let engine = KokoroTTS(modelPath: modelURL)
                         let arrays = try MLX.loadArrays(url: voiceURL)
-                        guard let loadedVoice = arrays["voice"] else {
+                        guard let voice = arrays["voice"] else {
                             throw EngineError.unavailableVoiceData
                         }
-                        voiceCache[settings.voice.id] = loadedVoice
-                        voice = loadedVoice
-                    }
 
-                    let sampleRate = Double(KokoroTTS.Constants.samplingRate)
-                    let chunks = TextChunker.chunks(
-                        from: cleanedText,
-                        paragraphPause: settings.paragraphPause
-                    )
+                        let sampleRate = Double(KokoroTTS.Constants.samplingRate)
+                        let chunks = TextChunker.chunks(
+                            from: cleanedText,
+                            paragraphPause: settings.paragraphPause
+                        )
 
-                    guard !chunks.isEmpty else {
-                        throw EngineError.emptyText
-                    }
-
-                    var combined: [Float] = []
-                    combined.reserveCapacity(Int(Double(cleanedText.count) * sampleRate / 14))
-
-                    let language: Language = settings.voice.isAmericanEnglish ? .enUS : .enGB
-                    try Self.processChunksAdaptively(
-                        chunks,
-                        process: { chunk in
-                            let (rawSamples, _) = try self.engine!.generateAudio(
-                                voice: voice,
-                                language: language,
-                                text: chunk.text,
-                                speed: settings.speed
-                            )
-
-                            let finishedChunk = AudioProcessor.finish(
-                                rawSamples,
-                                sampleRate: sampleRate,
-                                normalize: false,
-                                trimSilence: settings.trimsSilence
-                            )
-                            combined.append(contentsOf: finishedChunk)
-                            combined.append(
-                                contentsOf: AudioProcessor.silence(
-                                    duration: chunk.pauseAfter,
-                                    sampleRate: sampleRate
-                                )
-                            )
-                        },
-                        shouldSplit: Self.isTokenLimitError,
-                        progress: { completedFraction in
-                            progress(0.02 + (completedFraction * 0.98))
+                        guard !chunks.isEmpty else {
+                            throw EngineError.emptyText
                         }
-                    )
 
-                    AudioProcessor.finishInPlace(
-                        &combined,
-                        sampleRate: sampleRate,
-                        normalize: settings.normalizesAudio,
-                        trimSilence: false
-                    )
+                        var combined: [Float] = []
+                        combined.reserveCapacity(Int(Double(cleanedText.count) * sampleRate / 14))
 
-                    continuation.resume(
-                        returning: SpeechSynthesisResult(samples: combined, sampleRate: sampleRate)
-                    )
-                } catch {
-                    continuation.resume(throwing: error)
+                        let language: Language = settings.voice.isAmericanEnglish ? .enUS : .enGB
+                        try Self.processChunksAdaptively(
+                            chunks,
+                            process: { chunk in
+                                let (rawSamples, _) = try engine.generateAudio(
+                                    voice: voice,
+                                    language: language,
+                                    text: chunk.text,
+                                    speed: settings.speed
+                                )
+
+                                let finishedChunk = AudioProcessor.finish(
+                                    rawSamples,
+                                    sampleRate: sampleRate,
+                                    normalize: false,
+                                    trimSilence: settings.trimsSilence
+                                )
+                                combined.append(contentsOf: finishedChunk)
+                                combined.append(
+                                    contentsOf: AudioProcessor.silence(
+                                        duration: chunk.pauseAfter,
+                                        sampleRate: sampleRate
+                                    )
+                                )
+                            },
+                            shouldSplit: Self.isTokenLimitError,
+                            progress: { completedFraction in
+                                progress(0.02 + (completedFraction * 0.98))
+                            }
+                        )
+
+                        AudioProcessor.finishInPlace(
+                            &combined,
+                            sampleRate: sampleRate,
+                            normalize: settings.normalizesAudio,
+                            trimSilence: false
+                        )
+
+                        return SpeechSynthesisResult(samples: combined, sampleRate: sampleRate)
+                    }
                 }
+
+                // Release Swift/Objective-C references before returning MLX's buffers.
+                // Finish cleanup on the synthesis queue before success or failure is visible.
+                Stream.gpu.synchronize()
+                Memory.clearCache()
+                continuation.resume(with: result)
             }
         }
         #endif
