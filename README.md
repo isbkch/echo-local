@@ -1,4 +1,4 @@
-# Echolocal
+# Echolocal - The Best Kokoro TTS GUI on Apple Silicon
 
 **A focused native app for turning pasted text into natural speech on your Mac or iPhone.**
 
